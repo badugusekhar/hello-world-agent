@@ -41,6 +41,34 @@
     </div>
 
     <!-- ──────────────────────────────────── -->
+    <!-- FEATURE 2: Generate Prompt          -->
+    <!-- ──────────────────────────────────── -->
+    <div class="card">
+      <h2>🧠 Generate Prompt</h2>
+      <p class="description">Describe a task in plain English — get a detailed Claude Code prompt with goal, acceptance criteria, constraints, and steps.</p>
+
+      <div class="input-row">
+        <input
+          id="task-input"
+          type="text"
+          placeholder="e.g. add a dark mode toggle..."
+          onkeydown="if(event.key==='Enter') generatePrompt()"
+        />
+        <button onclick="generatePrompt()">Generate Prompt</button>
+      </div>
+
+      <!-- Loading indicator -->
+      <p id="prompt-loading" class="loading" style="display:none;">⏳ Claude is thinking...</p>
+
+      <!-- Result: monospace block + copy button -->
+      <div id="prompt-result" style="display:none;">
+        <p id="prompt-filename" class="saved-label"></p>
+        <pre id="prompt-output" class="code-block"></pre>
+        <button class="copy-btn" onclick="copyPrompt()">Copy</button>
+      </div>
+    </div>
+
+    <!-- ──────────────────────────────────── -->
     <!-- ADD FUTURE FEATURES BELOW AS CARDS  -->
     <!-- ──────────────────────────────────── -->
 
@@ -108,6 +136,47 @@
       } finally {
         document.getElementById("hello-loading").style.display = "none";
       }
+    }
+
+    // ── Feature 2: Generate Prompt ──
+    async function generatePrompt() {
+      const task = document.getElementById("task-input").value.trim();
+      if (!task) {
+        alert("Please describe a task first!");
+        return;
+      }
+
+      document.getElementById("prompt-loading").style.display = "block";
+      document.getElementById("prompt-result").style.display = "none";
+
+      try {
+        const res = await fetch("/generate-prompt", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ task })
+        });
+        const data = await res.json();
+        document.getElementById("prompt-output").textContent = data.prompt || data.error;
+        document.getElementById("prompt-filename").textContent = data.filename
+          ? "💾 Saved as: " + data.filename
+          : "";
+        document.getElementById("prompt-result").style.display = "block";
+      } catch (error) {
+        document.getElementById("prompt-output").textContent =
+          "⚠️ Error: Could not reach the agent. Is the server running?";
+        document.getElementById("prompt-result").style.display = "block";
+      } finally {
+        document.getElementById("prompt-loading").style.display = "none";
+      }
+    }
+
+    function copyPrompt() {
+      const text = document.getElementById("prompt-output").textContent;
+      navigator.clipboard.writeText(text).then(() => {
+        const btn = document.querySelector(".copy-btn");
+        btn.textContent = "Copied!";
+        setTimeout(() => btn.textContent = "Copy", 2000);
+      });
     }
 
     // ── Future Feature: Calculator (add when ready) ──

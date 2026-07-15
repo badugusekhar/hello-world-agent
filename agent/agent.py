@@ -6,17 +6,20 @@ You rarely need to change this file.
 
 What it does:
 - Accepts a prompt string from app.py
-- Sends it to Claude via Anthropic API
+- Sends it to Claude via the `claude` CLI (uses the active Claude Code session)
 - Returns Claude's response as a string
 """
 
 import os
-from anthropic import Anthropic
+import subprocess
 
 
 def ask_agent(prompt: str) -> str:
     """
     Send a prompt to Claude and return the response.
+
+    Uses the `claude` CLI so no API key is needed — it piggybacks on
+    the already-authenticated Claude Code session.
 
     Args:
         prompt (str): The natural language instruction for Claude.
@@ -25,20 +28,23 @@ def ask_agent(prompt: str) -> str:
     Returns:
         str: Claude's final text response.
     """
-    api_key = os.getenv("ANTHROPIC_API_KEY")
-    if not api_key:
-        return "Error: ANTHROPIC_API_KEY not set in .env file"
-
-    client = Anthropic(api_key=api_key)
-
     try:
-        message = client.messages.create(
-            model="claude-3-5-sonnet-20241022",
-            max_tokens=1024,
-            messages=[
-                {"role": "user", "content": prompt}
-            ]
+        result = subprocess.run(
+            ["claude", "-p", prompt, "--output-format", "text"],
+            capture_output=True,
+            stdin=subprocess.DEVNULL,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            timeout=120,
+            env={k: v for k, v in os.environ.items() if k != "ANTHROPIC_API_KEY"},
         )
-        return message.content[0].text
+        if result.returncode != 0:
+            return f"Error from claude CLI: {result.stderr.strip()}"
+        return result.stdout.strip()
+    except FileNotFoundError:
+        return "Error: `claude` CLI not found. Make sure Claude Code is installed and on PATH."
+    except subprocess.TimeoutExpired:
+        return "Error: Claude CLI timed out."
     except Exception as e:
         return f"Error calling Claude: {str(e)}"

@@ -118,6 +118,43 @@ button:hover {
   line-height: 1.5;
 }
 
+/* ── Code Block (prompt output) ── */
+.code-block {
+  background: #1a202c;
+  color: #e2e8f0;
+  border-radius: 8px;
+  padding: 16px;
+  font-family: 'Courier New', monospace;
+  font-size: 0.85rem;
+  white-space: pre-wrap;
+  word-break: break-word;
+  margin: 12px 0 8px;
+  line-height: 1.6;
+}
+
+.copy-btn {
+  background: #48bb78;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background 0.2s;
+}
+
+.copy-btn:hover {
+  background: #38a169;
+}
+
+/* ── Saved filename label ── */
+.saved-label {
+  font-size: 0.82rem;
+  color: #48bb78;
+  margin-top: 12px;
+  margin-bottom: 0;
+}
+
 /* ── Footer ── */
 .footer {
   text-align: center;
