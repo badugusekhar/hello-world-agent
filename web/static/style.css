@@ -2,6 +2,42 @@
    style.css — Hello World Agent UI
    ============================================ */
 
+/* ── CSS Variables (light theme defaults) ── */
+:root {
+  --bg:          #f0f4f8;
+  --text:        #2d3748;
+  --brand:       #2b6cb0;
+  --muted:       #718096;
+  --card-bg:     #ffffff;
+  --border:      #cbd5e0;
+  --focus:       #4299e1;
+  --btn:         #3182ce;
+  --btn-hover:   #2b6cb0;
+  --result-bg:   #ebf8ff;
+  --result-text: #2c5282;
+  --result-bar:  #3182ce;
+  --footer:      #a0aec0;
+  --shadow:      rgba(0, 0, 0, 0.08);
+}
+
+/* ── Dark theme overrides ── */
+[data-theme="dark"] {
+  --bg:          #0f1117;
+  --text:        #e2e8f0;
+  --brand:       #63b3ed;
+  --muted:       #a0aec0;
+  --card-bg:     #1a202c;
+  --border:      #2d3748;
+  --focus:       #63b3ed;
+  --btn:         #2b6cb0;
+  --btn-hover:   #2c5282;
+  --result-bg:   #1e3a5f;
+  --result-text: #bee3f8;
+  --result-bar:  #63b3ed;
+  --footer:      #4a5568;
+  --shadow:      rgba(0, 0, 0, 0.3);
+}
+
 * {
   box-sizing: border-box;
   margin: 0;
@@ -10,10 +46,11 @@
 
 body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background: #f0f4f8;
+  background: var(--bg);
   min-height: 100vh;
   padding: 40px 16px;
-  color: #2d3748;
+  color: var(--text);
+  transition: background 0.2s, color 0.2s;
 }
 
 .container {
@@ -25,37 +62,61 @@ body {
 .header {
   text-align: center;
   margin-bottom: 32px;
+  position: relative;
 }
 
 .header h1 {
   font-size: 2rem;
-  color: #2b6cb0;
+  color: var(--brand);
 }
 
 .subtitle {
-  color: #718096;
+  color: var(--muted);
   margin-top: 6px;
   font-size: 0.95rem;
 }
 
+/* ── Dark mode toggle button ── */
+.theme-toggle {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 6px 12px;
+  font-size: 0.85rem;
+  color: var(--muted);
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s;
+  white-space: nowrap;
+}
+
+.theme-toggle:hover {
+  border-color: var(--focus);
+  color: var(--text);
+  background: none;
+}
+
 /* ── Feature Card ── */
 .card {
-  background: #ffffff;
+  background: var(--card-bg);
   border-radius: 12px;
   padding: 28px;
   margin-bottom: 24px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 8px var(--shadow);
+  transition: background 0.2s, box-shadow 0.2s;
 }
 
 .card h2 {
   font-size: 1.2rem;
   margin-bottom: 6px;
-  color: #2d3748;
+  color: var(--text);
 }
 
 .description {
   font-size: 0.9rem;
-  color: #718096;
+  color: var(--muted);
   margin-bottom: 16px;
 }
 
@@ -71,21 +132,23 @@ input[type="number"],
 select {
   flex: 1;
   padding: 10px 14px;
-  border: 1px solid #cbd5e0;
+  border: 1px solid var(--border);
   border-radius: 8px;
   font-size: 1rem;
   outline: none;
-  transition: border-color 0.2s;
+  transition: border-color 0.2s, background 0.2s, color 0.2s;
+  background: var(--card-bg);
+  color: var(--text);
 }
 
 input:focus,
 select:focus {
-  border-color: #4299e1;
+  border-color: var(--focus);
 }
 
 button {
   padding: 10px 20px;
-  background: #3182ce;
+  background: var(--btn);
   color: white;
   border: none;
   border-radius: 8px;
@@ -96,26 +159,27 @@ button {
 }
 
 button:hover {
-  background: #2b6cb0;
+  background: var(--btn-hover);
 }
 
 /* ── Loading ── */
 .loading {
   margin-top: 14px;
-  color: #718096;
+  color: var(--muted);
   font-size: 0.9rem;
 }
 
 /* ── Result Box ── */
 .result-box {
   margin-top: 16px;
-  background: #ebf8ff;
-  border-left: 4px solid #3182ce;
+  background: var(--result-bg);
+  border-left: 4px solid var(--result-bar);
   border-radius: 8px;
   padding: 14px 16px;
   font-size: 1rem;
-  color: #2c5282;
+  color: var(--result-text);
   line-height: 1.5;
+  transition: background 0.2s, color 0.2s;
 }
 
 /* ── Code Block (prompt output) ── */
@@ -159,6 +223,6 @@ button:hover {
 .footer {
   text-align: center;
   margin-top: 16px;
-  color: #a0aec0;
+  color: var(--footer);
   font-size: 0.85rem;
 }

@@ -5,6 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Hello World Agent</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+  <script>
+    (function() {
+      var saved = localStorage.getItem('theme');
+      var prefer = (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : saved;
+      if (prefer === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+    })();
+  </script>
 </head>
 <body>
 
@@ -14,6 +21,7 @@
     <div class="header">
       <h1>🤖 Claude Agent</h1>
       <p class="subtitle">Hello World — powered by Claude Agent SDK</p>
+      <button class="theme-toggle" onclick="toggleTheme()" id="theme-btn">🌙 Dark</button>
     </div>
 
     <!-- ──────────────────────────────────── -->
@@ -102,6 +110,28 @@
   <!-- JavaScript — one function per feature -->
   <!-- ──────────────────────────────────── -->
   <script>
+
+    // ── Dark mode toggle ──
+    function toggleTheme() {
+      var html = document.documentElement;
+      var isDark = html.getAttribute('data-theme') === 'dark';
+      if (isDark) {
+        html.removeAttribute('data-theme');
+        localStorage.setItem('theme', 'light');
+        document.getElementById('theme-btn').textContent = '🌙 Dark';
+      } else {
+        html.setAttribute('data-theme', 'dark');
+        localStorage.setItem('theme', 'dark');
+        document.getElementById('theme-btn').textContent = '☀️ Light';
+      }
+    }
+
+    // Set initial button label on page load
+    (function() {
+      if (document.documentElement.getAttribute('data-theme') === 'dark') {
+        document.getElementById('theme-btn').textContent = '☀️ Light';
+      }
+    })();
 
     // ── Feature 1: Hello World ──
     async function sayHello() {
