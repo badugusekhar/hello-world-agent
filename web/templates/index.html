@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Hello World Agent</title>
+  <title>Claude Agents Playground</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
   <script>
     (function() {
@@ -19,10 +19,15 @@
 
     <!-- Header -->
     <div class="header">
-      <h1>🤖 Claude Agent</h1>
-      <p class="subtitle">Hello World — powered by Claude Agent SDK</p>
+      <h1>🤖 Claude Agents Playground</h1>
+      <p class="subtitle">Multi-agent demos powered by Claude Agent SDK</p>
       <button class="theme-toggle" onclick="toggleTheme()" id="theme-btn">🌙 Dark</button>
     </div>
+
+    <!-- ──────────────────────────────────── -->
+    <!-- CARDS GRID                          -->
+    <!-- ──────────────────────────────────── -->
+    <div class="cards-grid">
 
     <!-- ──────────────────────────────────── -->
     <!-- FEATURE 1: Hello World              -->
@@ -96,6 +101,8 @@
       </div>
       <div id="bp-list" class="bp-list" style="display:none;"></div>
     </div>
+
+    </div><!-- /cards-grid -->
 
     <!-- ──────────────────────────────────── -->
     <!-- ADD FUTURE FEATURES BELOW AS CARDS  -->

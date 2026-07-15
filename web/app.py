@@ -185,7 +185,7 @@ Rules:
 
 if __name__ == "__main__":
     print("=" * 50)
-    print("  Hello World Agent — Starting Server")
+    print("  Claude Agents Playground — Starting Server")
     print("  Open your browser at: http://localhost:5000")
     print("=" * 50)
     app.run(debug=True, port=5000)

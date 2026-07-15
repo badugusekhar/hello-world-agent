@@ -2,7 +2,7 @@
   "version": "0.0.1",
   "configurations": [
     {
-      "name": "hello-world-agent",
+      "name": "claude-agents-playground",
       "runtimeExecutable": "python3",
       "runtimeArgs": ["web/app.py"],
       "port": 5000

@@ -1,5 +1,5 @@
 /* ============================================
-   style.css — Hello World Agent UI
+   style.css — Claude Agents Playground UI
    ============================================ */
 
 /* ── CSS Variables (light theme defaults) ── */
@@ -54,8 +54,16 @@ body {
 }
 
 .container {
-  max-width: 640px;
+  max-width: 1200px;
   margin: 0 auto;
+}
+
+/* ── Cards grid — horizontal on wide viewports ── */
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 24px;
+  align-items: start;
 }
 
 /* ── Header ── */
@@ -103,7 +111,6 @@ body {
   background: var(--card-bg);
   border-radius: 12px;
   padding: 28px;
-  margin-bottom: 24px;
   box-shadow: 0 2px 8px var(--shadow);
   transition: background 0.2s, box-shadow 0.2s;
 }

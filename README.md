@@ -1,7 +1,6 @@
-# Hello World Agent — Claude Agent SDK
+# Claude Agents Playground — Claude Agent SDK
 
-A beginner-friendly web app demonstrating the Claude Agent SDK.
-Built with Python (Flask) + Claude Agent SDK.
+A multi-agent demo and prompt-engineering playground built with Python (Flask) + Claude Agent SDK.
 
 ---
 
@@ -33,7 +32,7 @@ hello-world-agent/
 ### Step 1 — Open the Project
 1. Open IntelliJ IDEA
 2. Click **File → Open**
-3. Select the `hello-world-agent` folder
+3. Select the `hello-world-agent` folder (the project root directory)
 4. Click **OK**
 
 ### Step 2 — Set Up Python Interpreter

@@ -21,7 +21,7 @@ def _mock_hello(page: Page, message: str = "Hello, Test User!", delay_ms: int = 
 
 def test_page_title(page: Page):
     page.goto("/")
-    assert page.title() == "Hello World Agent"
+    assert page.title() == "Claude Agents Playground"
 
 
 def test_page_heading_contains_claude_agent(page: Page):
