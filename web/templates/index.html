@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Hello World Agent</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+</head>
+<body>
+
+  <div class="container">
+
+    <!-- Header -->
+    <div class="header">
+      <h1>🤖 Claude Agent</h1>
+      <p class="subtitle">Hello World — powered by Claude Agent SDK</p>
+    </div>
+
+    <!-- ──────────────────────────────────── -->
+    <!-- FEATURE 1: Hello World              -->
+    <!-- ──────────────────────────────────── -->
+    <div class="card">
+      <h2>👋 Hello World</h2>
+      <p class="description">Enter your name and Claude will greet you.</p>
+
+      <div class="input-row">
+        <input
+          id="name-input"
+          type="text"
+          placeholder="Enter your name..."
+          onkeydown="if(event.key==='Enter') sayHello()"
+        />
+        <button onclick="sayHello()">Say Hello</button>
+      </div>
+
+      <!-- Loading indicator -->
+      <p id="hello-loading" class="loading" style="display:none;">⏳ Claude is thinking...</p>
+
+      <!-- Result box -->
+      <div id="hello-result" class="result-box" style="display:none;"></div>
+    </div>
+
+    <!-- ──────────────────────────────────── -->
+    <!-- ADD FUTURE FEATURES BELOW AS CARDS  -->
+    <!-- ──────────────────────────────────── -->
+
+    <!-- Example: Calculator card (commented out for now)
+    <div class="card">
+      <h2>🔢 Calculator</h2>
+      <p class="description">Enter two numbers and an operation.</p>
+      <div class="input-row">
+        <input id="num1" type="number" placeholder="First number" />
+        <select id="op">
+          <option value="plus">+</option>
+          <option value="minus">-</option>
+          <option value="times">×</option>
+          <option value="divided by">÷</option>
+        </select>
+        <input id="num2" type="number" placeholder="Second number" />
+        <button onclick="calculate()">Calculate</button>
+      </div>
+      <div id="calc-result" class="result-box" style="display:none;"></div>
+    </div>
+    -->
+
+    <!-- Footer -->
+    <div class="footer">
+      <p>Future Finance Kids 🌱 — Planting The Wealth Seed</p>
+    </div>
+
+  </div>
+
+  <!-- ──────────────────────────────────── -->
+  <!-- JavaScript — one function per feature -->
+  <!-- ──────────────────────────────────── -->
+  <script>
+
+    // ── Feature 1: Hello World ──
+    async function sayHello() {
+      const name = document.getElementById("name-input").value.trim();
+      if (!name) {
+        alert("Please enter your name first!");
+        return;
+      }
+
+      // Show loading, hide old result
+      document.getElementById("hello-loading").style.display = "block";
+      document.getElementById("hello-result").style.display = "none";
+
+      try {
+        const res = await fetch("/hello", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name: name })
+        });
+
+        const data = await res.json();
+
+        // Show the result
+        const resultBox = document.getElementById("hello-result");
+        resultBox.textContent = data.message;
+        resultBox.style.display = "block";
+
+      } catch (error) {
+        document.getElementById("hello-result").textContent =
+          "⚠️ Error: Could not reach the agent. Is the server running?";
+        document.getElementById("hello-result").style.display = "block";
+      } finally {
+        document.getElementById("hello-loading").style.display = "none";
+      }
+    }
+
+    // ── Future Feature: Calculator (add when ready) ──
+    // async function calculate() {
+    //   const num1 = document.getElementById("num1").value;
+    //   const num2 = document.getElementById("num2").value;
+    //   const operation = document.getElementById("op").value;
+    //   const res = await fetch("/calculate", {
+    //     method: "POST",
+    //     headers: { "Content-Type": "application/json" },
+    //     body: JSON.stringify({ num1, num2, operation })
+    //   });
+    //   const data = await res.json();
+    //   const resultBox = document.getElementById("calc-result");
+    //   resultBox.textContent = "Result: " + data.result;
+    //   resultBox.style.display = "block";
+    // }
+
+  </script>
+
+</body>
+</html>

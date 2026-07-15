@@ -1,0 +1,127 @@
+/* ============================================
+   style.css — Hello World Agent UI
+   ============================================ */
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: #f0f4f8;
+  min-height: 100vh;
+  padding: 40px 16px;
+  color: #2d3748;
+}
+
+.container {
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+/* ── Header ── */
+.header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.header h1 {
+  font-size: 2rem;
+  color: #2b6cb0;
+}
+
+.subtitle {
+  color: #718096;
+  margin-top: 6px;
+  font-size: 0.95rem;
+}
+
+/* ── Feature Card ── */
+.card {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 28px;
+  margin-bottom: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.card h2 {
+  font-size: 1.2rem;
+  margin-bottom: 6px;
+  color: #2d3748;
+}
+
+.description {
+  font-size: 0.9rem;
+  color: #718096;
+  margin-bottom: 16px;
+}
+
+/* ── Input Row ── */
+.input-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+input[type="text"],
+input[type="number"],
+select {
+  flex: 1;
+  padding: 10px 14px;
+  border: 1px solid #cbd5e0;
+  border-radius: 8px;
+  font-size: 1rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+input:focus,
+select:focus {
+  border-color: #4299e1;
+}
+
+button {
+  padding: 10px 20px;
+  background: #3182ce;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.2s;
+  white-space: nowrap;
+}
+
+button:hover {
+  background: #2b6cb0;
+}
+
+/* ── Loading ── */
+.loading {
+  margin-top: 14px;
+  color: #718096;
+  font-size: 0.9rem;
+}
+
+/* ── Result Box ── */
+.result-box {
+  margin-top: 16px;
+  background: #ebf8ff;
+  border-left: 4px solid #3182ce;
+  border-radius: 8px;
+  padding: 14px 16px;
+  font-size: 1rem;
+  color: #2c5282;
+  line-height: 1.5;
+}
+
+/* ── Footer ── */
+.footer {
+  text-align: center;
+  margin-top: 16px;
+  color: #a0aec0;
+  font-size: 0.85rem;
+}
