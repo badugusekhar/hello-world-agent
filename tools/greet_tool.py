@@ -7,7 +7,7 @@ Currently, Claude handles greetings on its own (no tool needed).
 As your app grows, you would register tools like this
 as MCP (Model Context Protocol) servers so Claude can CALL them.
 
-Example future tools for Future Finance Kids:
+Example future tools:
   - generate_quiz_question(grade: int, topic: str) -> str
   - calculate_savings(amount: float, months: int) -> float
   - fetch_stock_price(symbol: str) -> dict
@@ -25,4 +25,4 @@ def greet(name: str) -> str:
     Returns:
         str: A greeting message.
     """
-    return f"Hello, {name}! Welcome to Future Finance Kids — Planting The Wealth Seed 🌱"
+    return f"Hello, {name}! Welcome to Claude Agents Playground."
