@@ -77,6 +77,27 @@
     </div>
 
     <!-- ──────────────────────────────────── -->
+    <!-- FEATURE 3: Best Practices           -->
+    <!-- ──────────────────────────────────── -->
+    <div class="card">
+      <h2>📋 Claude Code Best Practices</h2>
+      <p class="description">50 practices across 7 categories — select one to explore.</p>
+      <div class="input-row">
+        <select id="bp-category" onchange="showCategory()">
+          <option value="">— Pick a category —</option>
+          <option value="Workflow &amp; Sessions">Workflow &amp; Sessions (8)</option>
+          <option value="File Editing">File Editing (8)</option>
+          <option value="Bash &amp; Tool Use">Bash &amp; Tool Use (8)</option>
+          <option value="Context &amp; Memory">Context &amp; Memory (7)</option>
+          <option value="Safety &amp; Git">Safety &amp; Git (7)</option>
+          <option value="Prompting Claude">Prompting Claude (7)</option>
+          <option value="Multi-agent">Multi-agent (5)</option>
+        </select>
+      </div>
+      <div id="bp-list" class="bp-list" style="display:none;"></div>
+    </div>
+
+    <!-- ──────────────────────────────────── -->
     <!-- ADD FUTURE FEATURES BELOW AS CARDS  -->
     <!-- ──────────────────────────────────── -->
 
@@ -207,6 +228,87 @@
         btn.textContent = "Copied!";
         setTimeout(() => btn.textContent = "Copy", 2000);
       });
+    }
+
+    // ── Feature 3: Best Practices ──
+    const BEST_PRACTICES = {
+      "Workflow & Sessions": [
+        "Run /init at the start of every new project to auto-generate CLAUDE.md",
+        "Use /compact when context grows large — it summarises history and frees tokens",
+        "Use /clear to reset context completely between unrelated tasks",
+        "Run claude -p \"…\" for non-interactive, scriptable one-shot tasks",
+        "Use claude --resume to continue a previous session by ID",
+        "Add CLAUDE_CODE_MAX_OUTPUT_TOKENS to .env for longer responses in CI pipelines",
+        "Use /memory to persist facts (user preferences, conventions) across sessions",
+        "Run claude doctor to diagnose PATH, auth, and environment issues"
+      ],
+      "File Editing": [
+        "Always read a file with the Read tool before editing — Edit will error otherwise",
+        "Prefer Edit over Write for existing files — it sends only the diff, not the full file",
+        "Use replace_all: true when renaming a symbol that appears many times in one file",
+        "Make old_string unique by including enough surrounding context — ambiguous matches fail",
+        "Use Write only for brand-new files or complete rewrites of short files",
+        "Never change indentation style or add trailing whitespace in unrelated lines",
+        "Edit the minimal diff — don't refactor or clean up code outside the task scope",
+        "Prefer editing existing files to creating new ones; new files add maintenance surface"
+      ],
+      "Bash & Tool Use": [
+        "Use Glob for file pattern searches — never find or ls -R in Bash",
+        "Use Grep for content searches — never grep or rg in Bash",
+        "Use Read to view files — never cat, head, or tail in Bash",
+        "Batch independent tool calls in one message — they run in parallel and are faster",
+        "Set timeout on every long-running Bash command to prevent silent hangs",
+        "Use run_in_background: true for servers or watchers you don't need to wait on",
+        "Pass stdin=subprocess.DEVNULL when shelling out from Python to a non-interactive process",
+        "Always quote file paths that contain spaces in Bash commands"
+      ],
+      "Context & Memory": [
+        "Write a CLAUDE.md at the repo root — include project purpose, stack, and key conventions",
+        "Add build/test/lint commands to CLAUDE.md so Claude never has to discover them",
+        "Keep each memory file focused on one topic — user profile, feedback, project state, references",
+        "Link related memories with [[slug]] in the body for cross-referencing",
+        "Keep MEMORY.md index entries under ~150 characters — it is always loaded into context",
+        "Update or delete stale memories — outdated facts actively mislead future sessions",
+        "Verify memory claims before acting on them — check the file/symbol still exists"
+      ],
+      "Safety & Git": [
+        "Run git status before any command that could discard uncommitted work",
+        "Stash with git stash -u (includes untracked files) before checkout or reset",
+        "Never use --no-verify to skip hooks unless the user explicitly requests it",
+        "Prefer creating a new commit over git commit --amend to avoid rewriting history",
+        "Review git diff --staged before every commit — confirm no secrets slipped in",
+        "Never force-push to main or master — warn the user if they ask",
+        "Never commit .env, credentials, or key files — check filenames before git add ."
+      ],
+      "Prompting Claude": [
+        "State constraints explicitly — what NOT to do matters as much as what to do",
+        "Include acceptance criteria so Claude knows precisely when the task is done",
+        "Name the files to read first — eliminates unnecessary codebase exploration",
+        "Phrase goals as outcomes, not implementations (\"make login persist\" not \"add localStorage\")",
+        "Cap length with explicit instructions (\"one sentence\", \"under 250 words\") when brevity matters",
+        "One task per message for complex changes — mixing concerns produces muddled output",
+        "Ask for a plan before implementation on large features — align before Claude writes code"
+      ],
+      "Multi-agent": [
+        "Use subagent_type: \"Explore\" for read-only searches — it is faster and cheaper",
+        "Send multiple independent agent calls in one message — they run concurrently",
+        "Never duplicate research — if a subagent already found something, use its result",
+        "Use isolation: \"worktree\" for agents that make experimental or risky changes",
+        "Write fully self-contained agent prompts — subagents have no memory of the parent conversation"
+      ]
+    };
+
+    function showCategory() {
+      var cat = document.getElementById("bp-category").value;
+      var container = document.getElementById("bp-list");
+      if (!cat) { container.style.display = "none"; return; }
+      var items = BEST_PRACTICES[cat] || [];
+      container.innerHTML = items
+        .map(function(p, i) {
+          return "<div class=\"bp-item\"><span class=\"bp-num\">" + (i + 1) + "</span>" + p + "</div>";
+        })
+        .join("");
+      container.style.display = "block";
     }
 
     // ── Future Feature: Calculator (add when ready) ──

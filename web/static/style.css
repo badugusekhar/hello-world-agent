@@ -219,6 +219,36 @@ button:hover {
   margin-bottom: 0;
 }
 
+/* ── Best Practices list ── */
+.bp-list {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.bp-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: var(--result-bg);
+  border-radius: 8px;
+  padding: 10px 14px;
+  color: var(--result-text);
+  font-size: 0.9rem;
+  line-height: 1.5;
+  transition: background 0.2s, color 0.2s;
+}
+
+.bp-num {
+  min-width: 22px;
+  font-weight: 700;
+  color: var(--brand);
+  font-size: 0.8rem;
+  padding-top: 2px;
+  flex-shrink: 0;
+}
+
 /* ── Footer ── */
 .footer {
   text-align: center;
