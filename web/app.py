@@ -120,31 +120,28 @@ def generate_prompt():
     if not task:
         return jsonify({"error": "No task provided"}), 400
 
-    meta_prompt = f"""You are an expert Claude Code prompt engineer. Your job is to take a short, informal task description and turn it into a precise, detailed prompt that a developer can paste directly into Claude Code to get excellent results.
+    meta_prompt = f"""You are a Claude Code prompt engineer. Convert the task below into a concise, high-signal prompt — 150 to 250 words maximum. Claude Code is already skilled at exploring codebases; it does not need hand-holding. Give it intent and boundaries, not a tutorial.
 
-Task description: "{task}"
+Task: "{task}"
 
-Write a Claude Code prompt using EXACTLY this markdown structure — no extra commentary before or after:
+Output ONLY the prompt, using this exact structure. Keep each section tight:
 
-## Context & Assumptions
-State the tech stack, framework, or domain you are assuming based on the task description. If the task is ambiguous, pick the most common reasonable interpretation and say so. This lets the developer correct any wrong assumptions before running the prompt.
+**Task**
+One or two sentences. What to build or fix and the expected outcome. Be specific, not generic.
 
-## Goal
-One focused paragraph. What needs to be built, changed, or fixed — and why it matters. Be specific about the outcome, not just the action.
+**Constraints**
+3 bullets max. Only include non-obvious guardrails — things Claude would not naturally assume. Skip obvious ones like "don't break tests".
 
-## Acceptance Criteria
-A bullet list of concrete, testable conditions. Each criterion must be independently verifiable (e.g. "clicking X does Y", "the value persists after reload", "no console errors in both states"). Avoid vague criteria like "works correctly" or "looks good".
+**Done when**
+3 bullets max. Each must be independently verifiable by running or clicking something. No vague conditions.
 
-## Constraints & Things to Avoid
-Bullets covering: what existing code must not break, which dependencies or patterns to avoid, scope boundaries, and any non-obvious guardrails. Include at least one constraint about not over-engineering.
+**Start here**
+A short list of files most relevant to this task. Infer likely filenames from the task description and common project layouts.
 
-## Files to Read First
-List the specific files Claude should read before writing any code. This prevents unnecessary exploration. If the task is general, list likely candidates based on the assumed stack.
-
-## Suggested Approach
-Numbered steps. Each step should be a concrete action (read a file, add a function, edit a specific element). Steps should be ordered so each one builds on the last. Include a final verification step.
-
-Output only the prompt markdown — no preamble, no explanation, no wrapping quotes."""
+Rules:
+- Total output must be under 250 words
+- No fluff, no re-stating the obvious, no step-by-step approach (Claude figures that out)
+- No preamble or explanation outside the four sections above"""
 
     response = ask_agent(meta_prompt)
 
