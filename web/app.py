@@ -18,10 +18,13 @@ Flow:
   Browser → app.py (builds prompt) → agent.py (calls Claude) → Browser
 """
 
+import base64
 import os
 import re
 import subprocess
 import sys
+
+import httpx
 
 # Make sure Python can find the agent/ folder from anywhere
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__) + "/.."))
@@ -32,6 +35,10 @@ from agent.agent import ask_agent
 
 # Directory where generated prompts are saved as .md files
 PROMPTS_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "generated-prompts"))
+
+# ElevenLabs credentials for scrum voice feature
+ELEVENLABS_API_KEY  = os.getenv("ELEVENLABS_API_KEY", "")
+ELEVENLABS_VOICE_ID = os.getenv("ELEVENLABS_VOICE_ID", "")
 
 
 def git_push_prompt(filepath: str, filename: str) -> None:
@@ -164,6 +171,57 @@ Rules:
     git_push_prompt(filepath, filename)
 
     return jsonify({"prompt": response, "filename": filename})
+
+
+# ─────────────────────────────────────────────
+# ROUTE 4: Scrum Status Voice
+# ─────────────────────────────────────────────
+@app.route("/scrum-voice", methods=["POST"])
+def scrum_voice():
+    """
+    Feature: Generate a voice recording of a daily scrum status update.
+
+    Browser sends: { "today": "...", "tomorrow": "...", "blockers": "..." }
+    Returns:       { "script": "...", "audio": "data:audio/mpeg;base64,..." }
+
+    Step 1 — Claude rewrites bullet points as natural spoken language.
+    Step 2 — ElevenLabs TTS converts the script using the user's cloned voice.
+    Requires ELEVENLABS_API_KEY and ELEVENLABS_VOICE_ID in .env.
+    """
+    data     = request.get_json()
+    today    = data.get("today", "").strip()
+    tomorrow = data.get("tomorrow", "").strip()
+    blockers = data.get("blockers", "").strip() or "None"
+
+    if not today and not tomorrow:
+        return jsonify({"error": "Please fill in at least Today or Tomorrow."}), 400
+
+    rewrite_prompt = f"""Rewrite this daily scrum status as natural, conversational spoken English for a team standup — the kind you'd say out loud, not read from a list. Use contractions and smooth transitions. Keep it under 45 seconds when spoken aloud. Output ONLY the spoken script, no labels or preamble.
+
+Today: {today}
+Tomorrow: {tomorrow}
+Blockers: {blockers}"""
+
+    script = ask_agent(rewrite_prompt)
+
+    if not ELEVENLABS_API_KEY or not ELEVENLABS_VOICE_ID:
+        return jsonify({"error": "ElevenLabs API key or Voice ID not set in .env"}), 500
+
+    resp = httpx.post(
+        f"https://api.elevenlabs.io/v1/text-to-speech/{ELEVENLABS_VOICE_ID}",
+        headers={"xi-api-key": ELEVENLABS_API_KEY, "Content-Type": "application/json"},
+        json={
+            "text": script,
+            "model_id": "eleven_monolingual_v1",
+            "voice_settings": {"stability": 0.5, "similarity_boost": 0.8},
+        },
+        timeout=30,
+    )
+    if resp.status_code != 200:
+        return jsonify({"error": f"ElevenLabs error: {resp.text}"}), 500
+
+    audio_b64 = base64.b64encode(resp.content).decode("utf-8")
+    return jsonify({"script": script, "audio": f"data:audio/mpeg;base64,{audio_b64}"})
 
 
 # ─────────────────────────────────────────────

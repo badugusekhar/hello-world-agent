@@ -136,6 +136,7 @@ body {
 
 input[type="text"],
 input[type="number"],
+textarea,
 select {
   flex: 1;
   padding: 10px 14px;
@@ -149,8 +150,13 @@ select {
 }
 
 input:focus,
+textarea:focus,
 select:focus {
   border-color: var(--focus);
+}
+
+textarea {
+  resize: vertical;
 }
 
 button {

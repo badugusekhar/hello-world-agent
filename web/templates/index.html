@@ -102,6 +102,29 @@
       <div id="bp-list" class="bp-list" style="display:none;"></div>
     </div>
 
+      <!-- ──────────────────────────────────── -->
+      <!-- FEATURE 4: Scrum Status Voice      -->
+      <!-- ──────────────────────────────────── -->
+      <div class="card">
+        <h2>🎙️ Scrum Status Voice</h2>
+        <p class="description">Type your standup update — get a voice recording in your cloned voice.</p>
+        <div class="input-row">
+          <textarea id="scrum-today" rows="2" placeholder="Today: What did you complete?"></textarea>
+        </div>
+        <div class="input-row">
+          <textarea id="scrum-tomorrow" rows="2" placeholder="Tomorrow: What will you work on?"></textarea>
+        </div>
+        <div class="input-row">
+          <textarea id="scrum-blockers" rows="1" placeholder="Blockers: Any? (leave blank for None)"></textarea>
+          <button onclick="generateScrumVoice()">Generate</button>
+        </div>
+        <p id="scrum-loading" class="loading" style="display:none;">⏳ Generating your voice update...</p>
+        <div id="scrum-result" style="display:none;">
+          <audio id="scrum-audio" controls style="width:100%; margin-top:12px;"></audio>
+          <p id="scrum-script" style="font-size:0.82rem; color:var(--muted); margin-top:8px;"></p>
+        </div>
+      </div>
+
     </div><!-- /cards-grid -->
 
     <!-- ──────────────────────────────────── -->
@@ -316,6 +339,34 @@
         })
         .join("");
       container.style.display = "block";
+    }
+
+    // ── Feature 4: Scrum Status Voice ──
+    async function generateScrumVoice() {
+      const today    = document.getElementById("scrum-today").value.trim();
+      const tomorrow = document.getElementById("scrum-tomorrow").value.trim();
+      const blockers = document.getElementById("scrum-blockers").value.trim();
+      if (!today && !tomorrow) { alert("Please enter at least Today or Tomorrow."); return; }
+
+      document.getElementById("scrum-loading").style.display = "block";
+      document.getElementById("scrum-result").style.display = "none";
+
+      try {
+        const res = await fetch("/scrum-voice", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ today, tomorrow, blockers })
+        });
+        const data = await res.json();
+        if (data.error) { alert(data.error); return; }
+        document.getElementById("scrum-audio").src = data.audio;
+        document.getElementById("scrum-script").textContent = data.script;
+        document.getElementById("scrum-result").style.display = "block";
+      } catch (err) {
+        alert("Error generating voice update.");
+      } finally {
+        document.getElementById("scrum-loading").style.display = "none";
+      }
     }
 
     // ── Future Feature: Calculator (add when ready) ──
