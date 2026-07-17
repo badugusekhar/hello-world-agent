@@ -247,6 +247,129 @@ Blockers: {blockers}"""
 
 
 # ─────────────────────────────────────────────
+# ROUTE 5: Weekly Status Report PPT Generator
+# ─────────────────────────────────────────────
+
+WEEKLY_TEMPLATE = r"C:\Users\sekhar.a.badugu\OneDrive - Accenture\T-Mobile\weekly_Status_Report\2026\T-Mobile_Monitoring Dev Team_Project Status_2026-07-17.pptx"
+
+@app.route("/weekly-report", methods=["POST"])
+def weekly_report():
+    """
+    Feature: Generate a weekly T-Mobile status PowerPoint report.
+
+    Browser sends: { "date": "2026-07-24", "key_updates": "...", "next_steps": "...", "blockers": "..." }
+    Returns:       { "filename": "...", "file": "data:application/...;base64,..." }
+
+    Copies the template PPTX, replaces the date on slide 1 and fills the
+    three content rows on slide 2 using python-pptx. Claude polishes each
+    section into professional bullet-point text first.
+    """
+    import json as _json
+    import re as _re
+    import shutil
+    from pptx import Presentation
+    from pptx.util import Pt
+
+    data        = request.get_json()
+    week_date   = data.get("date", "").strip()
+    key_updates = data.get("key_updates", "").strip()
+    next_steps  = data.get("next_steps", "").strip()
+    blockers    = data.get("blockers", "").strip() or "None"
+
+    if not week_date or not key_updates:
+        return jsonify({"error": "Date and Key Updates are required."}), 400
+
+    # Step 1: Claude polishes content into structured bullets
+    polish_prompt = f"""You are writing a professional weekly status report for a software development team at T-Mobile.
+Format each section as clean bullet points. Use sub-topic labels followed by bullet detail lines.
+Keep language concise and professional. Do NOT add any extra commentary.
+
+Key Updates:
+{key_updates}
+
+Next Steps:
+{next_steps}
+
+Blockers/Dependencies:
+{blockers}
+
+Return ONLY a valid JSON object with exactly these three keys: "key_updates", "next_steps", "blockers".
+Each value is a list of strings. Sub-topic label lines end with a colon (e.g. "OneConsole:").
+Bullet detail lines start with "• " (e.g. "• Completed integration testing").
+Example format:
+{{
+  "key_updates": ["OneConsole:", "• Fixed pipeline issue", "PITSTOP:", "• Ready for deployment"],
+  "next_steps": ["• Take new story if available", "• Continue integration testing"],
+  "blockers": ["• MR reviews pending"]
+}}"""
+
+    raw = ask_agent(polish_prompt)
+
+    match = _re.search(r'\{.*\}', raw, _re.DOTALL)
+    try:
+        sections = _json.loads(match.group(0)) if match else {}
+    except Exception:
+        sections = {}
+
+    if not sections.get("key_updates"):
+        sections = {
+            "key_updates": [key_updates],
+            "next_steps": [next_steps] if next_steps else ["• No updates"],
+            "blockers": [blockers],
+        }
+
+    # Step 2: Copy template and write content with python-pptx
+    tmp = tempfile.mktemp(suffix=".pptx")
+    shutil.copy2(WEEKLY_TEMPLATE, tmp)
+    prs = Presentation(tmp)
+
+    # Slide 1: replace the date (3rd paragraph of the title text box)
+    slide1 = prs.slides[0]
+    for shape in slide1.shapes:
+        if shape.has_text_frame and len(shape.text_frame.paragraphs) >= 3:
+            para = shape.text_frame.paragraphs[2]
+            for run in para.runs:
+                run.text = week_date
+            break
+
+    # Slide 2 has 3 separate tables (Key Updates, Next Steps, Blockers)
+    # Each table has 2 rows: row[0]=header, row[1]=content
+    slide2 = prs.slides[1]
+    tables = [s.table for s in slide2.shapes if s.has_table]
+
+    def fill_cell(cell, lines):
+        tf = cell.text_frame
+        tf.clear()
+        for i, line in enumerate(lines):
+            p = tf.add_paragraph() if i > 0 else tf.paragraphs[0]
+            is_label = line.rstrip().endswith(":") and not line.startswith("•")
+            p.level = 0 if is_label else 1
+            run = p.add_run()
+            run.text = line.lstrip("• ")
+            run.font.bold = is_label
+            run.font.size = Pt(16) if is_label else Pt(14)
+
+    if len(tables) >= 1:
+        fill_cell(tables[0].rows[1].cells[0], sections.get("key_updates", [key_updates]))
+    if len(tables) >= 2:
+        fill_cell(tables[1].rows[1].cells[0], sections.get("next_steps", [next_steps or "• No updates"]))
+    if len(tables) >= 3:
+        fill_cell(tables[2].rows[1].cells[0], sections.get("blockers", [blockers]))
+
+    prs.save(tmp)
+    with open(tmp, "rb") as f:
+        pptx_bytes = f.read()
+    os.unlink(tmp)
+
+    filename = f"T-Mobile_Monitoring Dev Team_Project Status_{week_date}.pptx"
+    pptx_b64 = base64.b64encode(pptx_bytes).decode("utf-8")
+    return jsonify({
+        "filename": filename,
+        "file": f"data:application/vnd.openxmlformats-officedocument.presentationml.presentation;base64,{pptx_b64}"
+    })
+
+
+# ─────────────────────────────────────────────
 # FUTURE FEATURES — Add new routes below here
 # ─────────────────────────────────────────────
 

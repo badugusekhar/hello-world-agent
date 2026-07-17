@@ -142,6 +142,34 @@
         </div>
       </div>
 
+      <!-- CARD: Weekly Status Report -->
+      <div class="card" style="grid-column: span 2;">
+        <h2>📊 Weekly Status Report</h2>
+        <p class="description">Enter your weekly update — download a ready-to-send T-Mobile status PPT.</p>
+        <div class="input-row">
+          <input id="wr-date" type="text" placeholder="Week ending date (e.g. 2026-07-24)" />
+        </div>
+        <div class="input-row">
+          <textarea id="wr-updates" rows="4" placeholder="Key Updates: What was completed this week?"></textarea>
+        </div>
+        <div class="input-row">
+          <textarea id="wr-next" rows="3" placeholder="Next Steps: What's planned for next week?"></textarea>
+        </div>
+        <div class="input-row">
+          <textarea id="wr-blockers" rows="2" placeholder="Blockers/Dependencies: Any? (leave blank for None)"></textarea>
+        </div>
+        <div class="input-row">
+          <button id="wr-generate-btn" onclick="generateWeeklyReport()">Generate PPT</button>
+        </div>
+        <div id="wr-loading" style="display:none; margin-top:10px;">
+          <p class="loading">⏳ Claude is building your status report...</p>
+        </div>
+        <div id="wr-result" style="display:none; margin-top:12px;">
+          <a id="wr-download" class="copy-btn" style="display:inline-block; text-decoration:none; cursor:pointer;">⬇ Download PPT</a>
+          <p id="wr-filename" style="font-size:0.82rem; color:var(--muted); margin-top:6px;"></p>
+        </div>
+      </div>
+
     </div><!-- /cards-grid -->
 
     <!-- ──────────────────────────────────── -->
@@ -421,6 +449,41 @@
         document.getElementById("scrum-loading").style.display = "none";
         genBtn.disabled = false;
         genBtn.textContent = "Generate";
+      }
+    }
+
+    // ── Feature 5: Weekly Status Report ──
+    async function generateWeeklyReport() {
+      const date     = document.getElementById("wr-date").value.trim();
+      const updates  = document.getElementById("wr-updates").value.trim();
+      const next     = document.getElementById("wr-next").value.trim();
+      const blockers = document.getElementById("wr-blockers").value.trim();
+      if (!date || !updates) { alert("Date and Key Updates are required."); return; }
+
+      const btn = document.getElementById("wr-generate-btn");
+      btn.disabled = true; btn.textContent = "Generating…";
+      document.getElementById("wr-loading").style.display = "block";
+      document.getElementById("wr-result").style.display = "none";
+
+      try {
+        const res = await fetch("/weekly-report", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ date, key_updates: updates, next_steps: next, blockers })
+        });
+        const data = await res.json();
+        if (data.error) { alert(data.error); return; }
+        const link = document.getElementById("wr-download");
+        link.href = data.file;
+        link.download = data.filename;
+        document.getElementById("wr-filename").textContent = data.filename;
+        document.getElementById("wr-result").style.display = "block";
+        link.click();
+      } catch (err) {
+        alert("Error generating report.");
+      } finally {
+        document.getElementById("wr-loading").style.display = "none";
+        btn.disabled = false; btn.textContent = "Generate PPT";
       }
     }
 
