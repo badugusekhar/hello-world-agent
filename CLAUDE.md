@@ -10,10 +10,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 **CRITICAL**: Flask must be started from **Bash** (not PowerShell) to inherit the Claude Code OAuth session env vars (`CLAUDECODE`, `CLAUDE_CODE_SESSION_ID`, etc.). Starting from PowerShell breaks the `claude` CLI subprocess auth.
 
 ```bash
-# From Bash terminal:
-python3 web/app.py
-# OR
-/c/Users/sekhar.a.badugu/AppData/Local/Python/bin/python3.exe web/app.py
+# From Bash terminal — uses the Python 3.11 venv (required for Coqui TTS):
+/c/Claude-agents/hello-world-agent/.venv311/Scripts/python.exe web/app.py
 ```
 
 App runs at `http://localhost:5000`. No build step — Flask serves directly.
@@ -21,7 +19,8 @@ App runs at `http://localhost:5000`. No build step — Flask serves directly.
 ### Install dependencies
 
 ```bash
-pip install -r requirements.txt
+# Use the Python 3.11 venv (Coqui TTS requires Python 3.9–3.11)
+/c/Claude-agents/hello-world-agent/.venv311/Scripts/pip.exe install -r requirements.txt
 playwright install chromium   # one-time, required for E2E tests
 ```
 

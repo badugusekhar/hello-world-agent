@@ -23,8 +23,7 @@ import os
 import re
 import subprocess
 import sys
-
-import httpx
+import tempfile
 
 # Make sure Python can find the agent/ folder from anywhere
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__) + "/.."))
@@ -36,9 +35,23 @@ from agent.agent import ask_agent
 # Directory where generated prompts are saved as .md files
 PROMPTS_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "generated-prompts"))
 
-# ElevenLabs credentials for scrum voice feature
-ELEVENLABS_API_KEY  = os.getenv("ELEVENLABS_API_KEY", "")
-ELEVENLABS_VOICE_ID = os.getenv("ELEVENLABS_VOICE_ID", "")
+# Voice reference samples for Chatterbox TTS cloning
+_VOICE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+VOICE_SAMPLES = {
+    "sekhar":  os.path.join(_VOICE_DIR, "sekhar_voice.wav"),
+    "abhinav": os.path.join(_VOICE_DIR, "abhinav_voice.wav"),
+    "akshay":  os.path.join(_VOICE_DIR, "akshay_voice.wav"),
+}
+
+# Chatterbox model — loaded once on first request
+_chatterbox = None
+
+def get_chatterbox():
+    global _chatterbox
+    if _chatterbox is None:
+        from chatterbox.tts import ChatterboxTTS
+        _chatterbox = ChatterboxTTS.from_pretrained(device="cpu")
+    return _chatterbox
 
 
 def git_push_prompt(filepath: str, filename: str) -> None:
@@ -182,19 +195,24 @@ def scrum_voice():
     Feature: Generate a voice recording of a daily scrum status update.
 
     Browser sends: { "today": "...", "tomorrow": "...", "blockers": "..." }
-    Returns:       { "script": "...", "audio": "data:audio/mpeg;base64,..." }
+    Returns:       { "script": "...", "audio": "data:audio/wav;base64,..." }
 
     Step 1 — Claude rewrites bullet points as natural spoken language.
-    Step 2 — ElevenLabs TTS converts the script using the user's cloned voice.
-    Requires ELEVENLABS_API_KEY and ELEVENLABS_VOICE_ID in .env.
+    Step 2 — Coqui XTTS-v2 synthesises audio using sekhar_voice.m4a as the
+              voice reference (runs fully locally, no API key needed).
     """
     data     = request.get_json()
     today    = data.get("today", "").strip()
     tomorrow = data.get("tomorrow", "").strip()
     blockers = data.get("blockers", "").strip() or "None"
+    voice    = data.get("voice", "sekhar").strip().lower()
 
     if not today and not tomorrow:
         return jsonify({"error": "Please fill in at least Today or Tomorrow."}), 400
+
+    voice_sample = VOICE_SAMPLES.get(voice, VOICE_SAMPLES["sekhar"])
+    if not os.path.exists(voice_sample):
+        return jsonify({"error": f"{voice.capitalize()}'s voice file not found. Please copy {voice}_voice.wav to the project root folder."}), 400
 
     rewrite_prompt = f"""Rewrite this daily scrum status as natural, conversational spoken English for a team standup — the kind you'd say out loud, not read from a list. Use contractions and smooth transitions. Keep it under 45 seconds when spoken aloud. Output ONLY the spoken script, no labels or preamble.
 
@@ -204,24 +222,28 @@ Blockers: {blockers}"""
 
     script = ask_agent(rewrite_prompt)
 
-    if not ELEVENLABS_API_KEY or not ELEVENLABS_VOICE_ID:
-        return jsonify({"error": "ElevenLabs API key or Voice ID not set in .env"}), 500
+    try:
+        import torchaudio
+        import numpy as np
+        import librosa
+        model = get_chatterbox()
+        wav = model.generate(script, audio_prompt_path=voice_sample, exaggeration=0.0, cfg_weight=0.95)
+        # Slow down to 80% speed to match natural speaking pace (no pitch change)
+        wav_np = wav.squeeze().cpu().numpy()
+        wav_slow = librosa.effects.time_stretch(wav_np, rate=0.80)
+        wav_out = np.expand_dims(wav_slow, axis=0)
+        import torch
+        wav_tensor = torch.from_numpy(wav_out)
+        tmp_path = tempfile.mktemp(suffix=".wav")
+        torchaudio.save(tmp_path, wav_tensor, model.sr)
+        with open(tmp_path, "rb") as f:
+            audio_bytes = f.read()
+        os.unlink(tmp_path)
+    except Exception as e:
+        return jsonify({"error": f"TTS generation failed: {str(e)}"}), 500
 
-    resp = httpx.post(
-        f"https://api.elevenlabs.io/v1/text-to-speech/{ELEVENLABS_VOICE_ID}",
-        headers={"xi-api-key": ELEVENLABS_API_KEY, "Content-Type": "application/json"},
-        json={
-            "text": script,
-            "model_id": "eleven_monolingual_v1",
-            "voice_settings": {"stability": 0.5, "similarity_boost": 0.8},
-        },
-        timeout=30,
-    )
-    if resp.status_code != 200:
-        return jsonify({"error": f"ElevenLabs error: {resp.text}"}), 500
-
-    audio_b64 = base64.b64encode(resp.content).decode("utf-8")
-    return jsonify({"script": script, "audio": f"data:audio/mpeg;base64,{audio_b64}"})
+    audio_b64 = base64.b64encode(audio_bytes).decode("utf-8")
+    return jsonify({"script": script, "audio": f"data:audio/wav;base64,{audio_b64}"})
 
 
 # ─────────────────────────────────────────────

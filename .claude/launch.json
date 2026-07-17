@@ -3,7 +3,7 @@
   "configurations": [
     {
       "name": "claude-agents-playground",
-      "runtimeExecutable": "python3",
+      "runtimeExecutable": "C:/Claude-agents/hello-world-agent/.venv311/Scripts/python.exe",
       "runtimeArgs": ["web/app.py"],
       "port": 5000
     }

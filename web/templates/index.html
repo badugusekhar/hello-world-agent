@@ -108,6 +108,14 @@
       <div class="card">
         <h2>🎙️ Scrum Status Voice</h2>
         <p class="description">Type your standup update — get a voice recording in your cloned voice.</p>
+        <div class="input-row" style="align-items:center; gap:8px;">
+          <label for="scrum-voice" style="font-weight:600; white-space:nowrap; color:var(--text);">Voice:</label>
+          <select id="scrum-voice" style="flex:1;">
+            <option value="sekhar">Sekhar</option>
+            <option value="abhinav">Abhinav</option>
+            <option value="akshay">Akshay</option>
+          </select>
+        </div>
         <div class="input-row">
           <textarea id="scrum-today" rows="2" placeholder="Today: What did you complete?"></textarea>
         </div>
@@ -116,9 +124,18 @@
         </div>
         <div class="input-row">
           <textarea id="scrum-blockers" rows="1" placeholder="Blockers: Any? (leave blank for None)"></textarea>
-          <button onclick="generateScrumVoice()">Generate</button>
+          <button id="scrum-generate-btn" onclick="generateScrumVoice()">Generate</button>
         </div>
-        <p id="scrum-loading" class="loading" style="display:none;">⏳ Generating your voice update...</p>
+        <div id="scrum-loading" style="display:none; margin-top:10px;">
+          <p class="loading">⏳ Generating your voice update...</p>
+          <div style="margin-top:6px; font-size:0.85rem; color:var(--muted); display:flex; gap:16px;">
+            <span>⏱ Elapsed: <strong id="scrum-elapsed">0:00</strong></span>
+            <span>🕐 Remaining: <strong id="scrum-remaining">~4:00</strong></span>
+          </div>
+          <div style="margin-top:8px; background:var(--border,#e2e8f0); border-radius:4px; height:6px; overflow:hidden;">
+            <div id="scrum-progress-bar" style="height:100%; width:0%; background:var(--brand,#3182ce); border-radius:4px; transition:width 1s linear;"></div>
+          </div>
+        </div>
         <div id="scrum-result" style="display:none;">
           <audio id="scrum-audio" controls style="width:100%; margin-top:12px;"></audio>
           <p id="scrum-script" style="font-size:0.82rem; color:var(--muted); margin-top:8px;"></p>
@@ -342,30 +359,68 @@
     }
 
     // ── Feature 4: Scrum Status Voice ──
+    var _scrumTimer = null;
+    const SCRUM_ESTIMATE_SECS = 240; // ~4 min average on CPU
+
+    function _fmtTime(secs) {
+      const m = Math.floor(secs / 60), s = Math.floor(secs % 60);
+      return m + ":" + String(s).padStart(2, "0");
+    }
+
+    function _startScrumTimer() {
+      const start = Date.now();
+      _scrumTimer = setInterval(function() {
+        const elapsed = (Date.now() - start) / 1000;
+        const remaining = Math.max(0, SCRUM_ESTIMATE_SECS - elapsed);
+        const pct = Math.min(100, (elapsed / SCRUM_ESTIMATE_SECS) * 100);
+        document.getElementById("scrum-elapsed").textContent = _fmtTime(elapsed);
+        document.getElementById("scrum-remaining").textContent = remaining > 0 ? "~" + _fmtTime(remaining) : "almost done…";
+        document.getElementById("scrum-progress-bar").style.width = pct + "%";
+      }, 1000);
+    }
+
+    function _stopScrumTimer() {
+      if (_scrumTimer) { clearInterval(_scrumTimer); _scrumTimer = null; }
+      document.getElementById("scrum-progress-bar").style.width = "100%";
+    }
+
     async function generateScrumVoice() {
       const today    = document.getElementById("scrum-today").value.trim();
       const tomorrow = document.getElementById("scrum-tomorrow").value.trim();
       const blockers = document.getElementById("scrum-blockers").value.trim();
+      const voice    = document.getElementById("scrum-voice").value;
       if (!today && !tomorrow) { alert("Please enter at least Today or Tomorrow."); return; }
 
+      const genBtn = document.getElementById("scrum-generate-btn");
+      genBtn.disabled = true;
+      genBtn.textContent = "Generating…";
       document.getElementById("scrum-loading").style.display = "block";
       document.getElementById("scrum-result").style.display = "none";
+      document.getElementById("scrum-elapsed").textContent = "0:00";
+      document.getElementById("scrum-remaining").textContent = "~4:00";
+      document.getElementById("scrum-progress-bar").style.width = "0%";
+      _startScrumTimer();
 
       try {
         const res = await fetch("/scrum-voice", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ today, tomorrow, blockers })
+          body: JSON.stringify({ today, tomorrow, blockers, voice })
         });
         const data = await res.json();
         if (data.error) { alert(data.error); return; }
-        document.getElementById("scrum-audio").src = data.audio;
+        const audio = document.getElementById("scrum-audio");
+        audio.src = data.audio;
         document.getElementById("scrum-script").textContent = data.script;
         document.getElementById("scrum-result").style.display = "block";
+        audio.play();
       } catch (err) {
         alert("Error generating voice update.");
       } finally {
+        _stopScrumTimer();
         document.getElementById("scrum-loading").style.display = "none";
+        genBtn.disabled = false;
+        genBtn.textContent = "Generate";
       }
     }
 
