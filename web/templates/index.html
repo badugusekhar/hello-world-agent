@@ -166,7 +166,10 @@
         </div>
         <div id="wr-result" style="display:none; margin-top:12px;">
           <a id="wr-download" class="copy-btn" style="display:inline-block; text-decoration:none; cursor:pointer;">⬇ Download PPT</a>
+          <button id="wr-send-btn" class="copy-btn" onclick="sendWeeklyReport()"
+                  style="background:#e53e3e; margin-left:8px;">📧 Send Report</button>
           <p id="wr-filename" style="font-size:0.82rem; color:var(--muted); margin-top:6px;"></p>
+          <p id="wr-send-status" style="font-size:0.82rem; margin-top:4px;"></p>
         </div>
       </div>
 
@@ -478,12 +481,38 @@
         link.download = data.filename;
         document.getElementById("wr-filename").textContent = data.filename;
         document.getElementById("wr-result").style.display = "block";
+        document.getElementById("wr-send-status").textContent = "";
+        window._wrData = { date, key_updates: updates, next_steps: next, blockers, pptx_b64: data.file, filename: data.filename };
         link.click();
       } catch (err) {
         alert("Error generating report.");
       } finally {
         document.getElementById("wr-loading").style.display = "none";
         btn.disabled = false; btn.textContent = "Generate PPT";
+      }
+    }
+
+    async function sendWeeklyReport() {
+      if (!window._wrData) { alert("Generate the report first."); return; }
+      const btn = document.getElementById("wr-send-btn");
+      btn.disabled = true; btn.textContent = "Opening Outlook…";
+      document.getElementById("wr-send-status").textContent = "";
+      try {
+        const res = await fetch("/send-email", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(window._wrData)
+        });
+        const data = await res.json();
+        if (data.error) {
+          document.getElementById("wr-send-status").textContent = "⚠️ " + data.error;
+        } else {
+          document.getElementById("wr-send-status").textContent = "✅ Outlook draft opened — review and click Send.";
+        }
+      } catch (err) {
+        document.getElementById("wr-send-status").textContent = "⚠️ Could not open Outlook.";
+      } finally {
+        btn.disabled = false; btn.textContent = "📧 Send Report";
       }
     }
 

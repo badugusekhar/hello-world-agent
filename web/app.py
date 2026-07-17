@@ -370,6 +370,90 @@ Example format:
 
 
 # ─────────────────────────────────────────────
+# ROUTE 6: Send Weekly Report via Outlook
+# ─────────────────────────────────────────────
+@app.route("/send-email", methods=["POST"])
+def send_email():
+    """
+    Feature: Open a pre-filled Outlook draft for the weekly status report.
+
+    Browser sends: { date, key_updates, next_steps, blockers, pptx_b64, filename }
+    Returns:       { "ok": true }
+
+    Claude writes a short email body summary, then win32com opens Outlook with
+    To/CC/Subject/Body/Attachment pre-filled. The user reviews and clicks Send.
+    """
+    import win32com.client
+
+    data        = request.get_json()
+    week_date   = data.get("date", "").strip()
+    key_updates = data.get("key_updates", "").strip()
+    next_steps  = data.get("next_steps", "").strip()
+    blockers    = data.get("blockers", "").strip() or "None"
+    pptx_b64    = data.get("pptx_b64", "")
+    filename    = data.get("filename", f"Status_{week_date}.pptx")
+
+    if not pptx_b64:
+        return jsonify({"error": "No PPTX data — generate the report first."}), 400
+
+    # Step 1: Claude writes the email body
+    summary_prompt = f"""Write a short professional email body for a weekly T-Mobile status report email.
+The email is from Sekhar Badugu to Grace (project manager).
+
+Key Updates this week:
+{key_updates}
+
+Next Steps:
+{next_steps}
+
+Blockers:
+{blockers}
+
+Format:
+- Start with: "Hello Grace,"
+- One sentence intro: "Please see attached for the weekly status update of the Monitoring Dev Team(OneConsole)."
+- "To Summarize:" followed by 3-6 bullet points of the most important highlights
+- End with: "Let me know if you have any questions or concerns."
+- Do NOT include the sign-off — it will be added separately.
+- Output ONLY the email body text, no subject line."""
+
+    body_text = ask_agent(summary_prompt)
+
+    sign_off = (
+        "\n\nBest Regards,\n"
+        "Sekhar Badugu (Sekhar)\n"
+        "sekhar.a.badugu@accenture.com\n"
+        "Mobile: +91 9740252232\n"
+        "Upcoming PTO: None"
+    )
+    full_body = body_text.strip() + sign_off
+
+    # Step 2: Write PPTX bytes to temp file for attachment
+    pptx_bytes = base64.b64decode(pptx_b64.split(",", 1)[-1])
+    tmp_pptx = os.path.join(tempfile.gettempdir(), filename)
+    with open(tmp_pptx, "wb") as f:
+        f.write(pptx_bytes)
+
+    # Step 3: Open Outlook draft via COM automation
+    try:
+        outlook = win32com.client.Dispatch("Outlook.Application")
+        mail = outlook.CreateItem(0)  # 0 = olMailItem
+        mail.To = "grace.claflin1@t-mobile.com"
+        mail.CC = (
+            "Deshpande, Neelkanth; Harika, Tegbir; Rastogi, Nitin; "
+            "Gadhave, Akshay; Agarwal, Abhinav; Stratton, Jesse"
+        )
+        mail.Subject = f"T-Mobile | Monitoring Dev Team | Weekly Status Update | {week_date}"
+        mail.Body = full_body
+        mail.Attachments.Add(tmp_pptx)
+        mail.Display()  # opens draft — user clicks Send
+    except Exception as e:
+        return jsonify({"error": f"Outlook error: {str(e)}"}), 500
+
+    return jsonify({"ok": True})
+
+
+# ─────────────────────────────────────────────
 # FUTURE FEATURES — Add new routes below here
 # ─────────────────────────────────────────────
 
