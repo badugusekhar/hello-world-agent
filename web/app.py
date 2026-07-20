@@ -214,7 +214,7 @@ def scrum_voice():
     if not os.path.exists(voice_sample):
         return jsonify({"error": f"{voice.capitalize()}'s voice file not found. Please copy {voice}_voice.wav to the project root folder."}), 400
 
-    rewrite_prompt = f"""Rewrite this daily scrum status as natural, conversational spoken English for a team standup — the kind you'd say out loud, not read from a list. Use contractions and smooth transitions. Keep it under 45 seconds when spoken aloud. Output ONLY the spoken script, no labels or preamble.
+    rewrite_prompt = f"""Rewrite this daily scrum status as natural, conversational spoken English for a team standup. Use contractions and smooth transitions. Keep it very brief — under 10 seconds when spoken aloud (about 25 words max). Output ONLY the spoken script, no labels or preamble.
 
 Today: {today}
 Tomorrow: {tomorrow}
@@ -227,10 +227,10 @@ Blockers: {blockers}"""
         import numpy as np
         import librosa
         model = get_chatterbox()
-        wav = model.generate(script, audio_prompt_path=voice_sample, exaggeration=0.0, cfg_weight=0.95)
-        # Slow down to 80% speed to match natural speaking pace (no pitch change)
+        wav = model.generate(script, audio_prompt_path=voice_sample, exaggeration=0.2, cfg_weight=0.99)
+        # Slow down to 85% speed to match natural speaking pace (no pitch change)
         wav_np = wav.squeeze().cpu().numpy()
-        wav_slow = librosa.effects.time_stretch(wav_np, rate=0.80)
+        wav_slow = librosa.effects.time_stretch(wav_np, rate=0.85)
         wav_out = np.expand_dims(wav_slow, axis=0)
         import torch
         wav_tensor = torch.from_numpy(wav_out)
@@ -250,7 +250,7 @@ Blockers: {blockers}"""
 # ROUTE 5: Weekly Status Report PPT Generator
 # ─────────────────────────────────────────────
 
-WEEKLY_TEMPLATE = r"C:\Users\sekhar.a.badugu\OneDrive - Accenture\T-Mobile\weekly_Status_Report\2026\T-Mobile_Monitoring Dev Team_Project Status_2026-07-17.pptx"
+WEEKLY_TEMPLATE = os.path.join(_base_dir, "static", "weekly_template.pptx")
 
 @app.route("/weekly-report", methods=["POST"])
 def weekly_report():
@@ -454,6 +454,185 @@ Format:
 
 
 # ─────────────────────────────────────────────
+# ─────────────────────────────────────────────
+# ROUTE 7: Badminton Coach
+# ─────────────────────────────────────────────
+@app.route("/badminton-coach", methods=["POST"])
+def badminton_coach():
+    """
+    Feature: AI Badminton Coach with 5 modes.
+
+    Browser sends: { "mode": "daily-drill"|"tip-of-day"|"match-analysis"|"footwork-coach"|"weekly-plan", ...inputs }
+    Returns:       { "result": "..." }
+    """
+    data = request.get_json()
+    mode = data.get("mode", "").strip()
+
+    if mode == "daily-drill":
+        focus   = data.get("focus", "Footwork")
+        level   = data.get("level", "Intermediate")
+        minutes = data.get("minutes", "30")
+        prompt = f"""You are a professional badminton coach. Generate a structured {minutes}-minute training drill routine for a {level} player focused on {focus}.
+
+Format your response EXACTLY as follows (use these exact ALL-CAPS section labels):
+
+WARM-UP
+• [2-3 warm-up activities with duration each]
+
+MAIN DRILLS
+Drill 1: [Name]
+• Reps/Sets: [e.g. 3 sets x 20 reps]
+• Description: [clear step-by-step instructions]
+• Key focus: [one coaching cue]
+
+Drill 2: [Name]
+• Reps/Sets: [...]
+• Description: [...]
+• Key focus: [...]
+
+Drill 3: [Name]
+• Reps/Sets: [...]
+• Description: [...]
+• Key focus: [...]
+
+COOL-DOWN
+• [1-2 activities with duration]
+
+COACH'S TIP
+[One high-impact technique cue specific to {focus}]
+
+Keep all descriptions concise and immediately actionable. Assume the player has a court, racket, and a partner or wall available."""
+
+    elif mode == "tip-of-day":
+        focus = data.get("focus", "")
+        area_line = f"Focus area: {focus}." if focus else "Choose any high-impact area."
+        prompt = f"""You are a professional badminton coach. {area_line}
+Generate ONE focused, actionable technique tip for today's practice session.
+
+Format EXACTLY as follows:
+
+TODAY'S TIP: [Short punchy title]
+
+THE TECHNIQUE
+[2-3 sentences explaining the technique clearly]
+
+HOW TO PRACTICE IT
+• Step 1: [precise instruction]
+• Step 2: [precise instruction]
+• Step 3: [precise instruction]
+• Drill: [specific 5-10 minute exercise]
+
+WHY IT MATTERS
+[1-2 sentences on the game impact of this technique]
+
+Make it specific, immediately actionable, and focused on exactly one thing."""
+
+    elif mode == "match-analysis":
+        worked   = data.get("worked", "").strip()
+        didnt    = data.get("didnt", "").strip()
+        opponent = data.get("opponent", "").strip() or "Not specified"
+        if not worked and not didnt:
+            return jsonify({"error": "Please describe what worked or what didn't in the match."}), 400
+        prompt = f"""You are an experienced badminton coach analysing a competitive match for Sekhar, an intermediate daily player focused on improving footwork.
+
+Match report:
+What worked well: {worked}
+What didn't work / where points were lost: {didnt}
+Opponent's style: {opponent}
+
+Provide a structured tactical analysis using EXACTLY this format:
+
+STRENGTHS TO BUILD ON
+• [2-3 specific observations about what worked and why]
+
+ROOT CAUSE ANALYSIS
+• [2-3 specific reasons why points were lost — be precise about technical or tactical causes]
+
+TACTICAL ADJUSTMENTS
+• [3-4 specific changes to implement in the next match]
+
+PRIORITY DRILLS THIS WEEK
+Drill 1: [Name] — [what it fixes] — [duration/reps]
+Drill 2: [Name] — [what it fixes] — [duration/reps]
+Drill 3: [Name] — [what it fixes] — [duration/reps]
+
+MINDSET NOTE
+[One sentence on the mental or tactical mindset for Sekhar's next match]"""
+
+    elif mode == "footwork-coach":
+        pattern = data.get("pattern", "Split Step")
+        level   = data.get("level", "Intermediate")
+        prompt = f"""You are a professional badminton footwork specialist. Coach a {level} player on the {pattern}.
+
+Format EXACTLY as follows:
+
+TECHNIQUE BREAKDOWN: {pattern.upper()}
+
+COMMON MISTAKES
+• [Mistake 1 — with specific correction]
+• [Mistake 2 — with specific correction]
+• [Mistake 3 — with specific correction]
+
+CORRECT TECHNIQUE
+Step 1: [Precise body position and movement description]
+Step 2: [Precise body position and movement description]
+Step 3: [Precise body position and movement description]
+Step 4: [Precise body position and movement description]
+
+DRILLS TO BUILD THE PATTERN
+Drill 1: [Name]
+• Duration: [e.g. 3 x 30 seconds]
+• Instructions: [clear how-to]
+
+Drill 2: [Name]
+• Duration: [e.g. 5 x 10 repetitions]
+• Instructions: [clear how-to]
+
+Drill 3: [Name — match-condition drill]
+• Duration: [e.g. 10 minutes]
+• Instructions: [clear how-to]
+
+PROGRESSION CHECKPOINT
+[How the player knows the pattern is correct before moving to full speed]"""
+
+    elif mode == "weekly-plan":
+        sessions   = data.get("sessions", "5")
+        goal       = data.get("goal", "All-round")
+        weaknesses = data.get("weaknesses", "").strip() or "general improvement"
+        prompt = f"""You are a professional badminton coach building a weekly training plan for Sekhar, an intermediate competitive daily player.
+
+Training availability: {sessions} sessions per week
+Primary goal: {goal}
+Current weaknesses: {weaknesses}
+
+Build a complete weekly plan using EXACTLY this format:
+
+WEEKLY TRAINING PLAN — {goal.upper()}
+
+WEEKLY OVERVIEW
+[1-2 sentences on the training philosophy and focus for this week]
+
+SESSION SCHEDULE
+Day 1 — [Label e.g. Footwork & Speed]
+• Focus: [specific area]
+• Duration: [e.g. 45 min]
+• Key drills: [3-4 bullet points]
+
+[Repeat for each training day — distribute rest days naturally across the week]
+
+WEEKLY TARGETS
+• [3 specific measurable targets for the week]
+
+PROGRESSION NOTE
+[How to assess progress at the end of the week and what to adjust next week]"""
+
+    else:
+        return jsonify({"error": "Unknown coaching mode."}), 400
+
+    result = ask_agent(prompt)
+    return jsonify({"result": result})
+
+
 # FUTURE FEATURES — Add new routes below here
 # ─────────────────────────────────────────────
 

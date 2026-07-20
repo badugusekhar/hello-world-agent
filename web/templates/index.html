@@ -105,28 +105,38 @@
       <!-- ──────────────────────────────────── -->
       <!-- FEATURE 4: Scrum Status Voice      -->
       <!-- ──────────────────────────────────── -->
-      <div class="card">
+      <div class="card" style="grid-column: span 2;">
         <h2>🎙️ Scrum Status Voice</h2>
         <p class="description">Type your standup update — get a voice recording in your cloned voice.</p>
-        <div class="input-row" style="align-items:center; gap:8px;">
+
+        <!-- Voice selector + Generate button row -->
+        <div class="input-row" style="align-items:center; gap:12px; margin-bottom:12px;">
           <label for="scrum-voice" style="font-weight:600; white-space:nowrap; color:var(--text);">Voice:</label>
-          <select id="scrum-voice" style="flex:1;">
+          <select id="scrum-voice" style="width:160px; flex:none;">
             <option value="sekhar">Sekhar</option>
             <option value="abhinav">Abhinav</option>
             <option value="akshay">Akshay</option>
           </select>
+          <button id="scrum-generate-btn" onclick="generateScrumVoice()" style="margin-left:auto;">Generate</button>
         </div>
-        <div class="input-row">
-          <textarea id="scrum-today" rows="2" placeholder="Today: What did you complete?"></textarea>
+
+        <!-- Three text areas side by side -->
+        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px;">
+          <div>
+            <label style="font-size:0.82rem; font-weight:600; color:var(--muted); display:block; margin-bottom:4px;">Today</label>
+            <textarea id="scrum-today" rows="5" placeholder="What did you complete today?" style="width:100%; box-sizing:border-box;"></textarea>
+          </div>
+          <div>
+            <label style="font-size:0.82rem; font-weight:600; color:var(--muted); display:block; margin-bottom:4px;">Tomorrow</label>
+            <textarea id="scrum-tomorrow" rows="5" placeholder="What will you work on tomorrow?" style="width:100%; box-sizing:border-box;"></textarea>
+          </div>
+          <div>
+            <label style="font-size:0.82rem; font-weight:600; color:var(--muted); display:block; margin-bottom:4px;">Blockers</label>
+            <textarea id="scrum-blockers" rows="5" placeholder="Any blockers? (leave blank for None)" style="width:100%; box-sizing:border-box;"></textarea>
+          </div>
         </div>
-        <div class="input-row">
-          <textarea id="scrum-tomorrow" rows="2" placeholder="Tomorrow: What will you work on?"></textarea>
-        </div>
-        <div class="input-row">
-          <textarea id="scrum-blockers" rows="1" placeholder="Blockers: Any? (leave blank for None)"></textarea>
-          <button id="scrum-generate-btn" onclick="generateScrumVoice()">Generate</button>
-        </div>
-        <div id="scrum-loading" style="display:none; margin-top:10px;">
+
+        <div id="scrum-loading" style="display:none; margin-top:12px;">
           <p class="loading">⏳ Generating your voice update...</p>
           <div style="margin-top:6px; font-size:0.85rem; color:var(--muted); display:flex; gap:16px;">
             <span>⏱ Elapsed: <strong id="scrum-elapsed">0:00</strong></span>
@@ -170,6 +180,150 @@
                   style="background:#e53e3e; margin-left:8px;">📧 Send Report</button>
           <p id="wr-filename" style="font-size:0.82rem; color:var(--muted); margin-top:6px;"></p>
           <p id="wr-send-status" style="font-size:0.82rem; margin-top:4px;"></p>
+        </div>
+      </div>
+
+      <!-- ──────────────────────────────────── -->
+      <!-- FEATURE 6: Badminton Coach         -->
+      <!-- ──────────────────────────────────── -->
+      <div class="card" style="grid-column: span 2;">
+        <h2>🏸 Badminton Coach</h2>
+        <p class="description">Your personal AI coach — drills, technique, match analysis, and weekly plans.</p>
+
+        <!-- Mode selector row -->
+        <div class="input-row" style="align-items:center; gap:12px; margin-bottom:14px;">
+          <label style="font-weight:600; white-space:nowrap; color:var(--text);">Mode:</label>
+          <select id="bc-mode" onchange="bcOnModeChange()" style="flex:1; max-width:320px;">
+            <option value="daily-drill">🏋️ Daily Drill Generator</option>
+            <option value="tip-of-day">💡 Technique Tip of the Day</option>
+            <option value="match-analysis">📊 Post-Match Analysis</option>
+            <option value="footwork-coach">👟 Footwork Coach</option>
+            <option value="weekly-plan">📅 Weekly Training Plan</option>
+          </select>
+          <button id="bc-generate-btn" onclick="badmintonCoach()" style="margin-left:auto;">🏸 Generate</button>
+        </div>
+
+        <!-- Mode: Daily Drill Generator -->
+        <div id="bc-inputs-daily-drill" class="bc-input-group" style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px;">
+          <div>
+            <label class="bc-label">Focus Area</label>
+            <select id="bc-drill-focus">
+              <option>Footwork</option>
+              <option>Smash &amp; Power</option>
+              <option>Net Play</option>
+              <option>Serve &amp; Return</option>
+              <option>Defense &amp; Retrieval</option>
+            </select>
+          </div>
+          <div>
+            <label class="bc-label">Skill Level</label>
+            <select id="bc-drill-level">
+              <option>Beginner</option>
+              <option selected>Intermediate</option>
+              <option>Advanced</option>
+              <option>Competitive</option>
+            </select>
+          </div>
+          <div>
+            <label class="bc-label">Time Available</label>
+            <select id="bc-drill-time">
+              <option value="15">15 minutes</option>
+              <option value="30" selected>30 minutes</option>
+              <option value="45">45 minutes</option>
+              <option value="60">60 minutes</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Mode: Technique Tip of the Day -->
+        <div id="bc-inputs-tip-of-day" class="bc-input-group" style="display:none;">
+          <label class="bc-label">Focus Area (optional)</label>
+          <select id="bc-tip-focus" style="max-width:280px;">
+            <option value="">Any area — surprise me</option>
+            <option>Footwork</option>
+            <option>Smash &amp; Power</option>
+            <option>Net Play</option>
+            <option>Serve &amp; Return</option>
+            <option>Defense &amp; Retrieval</option>
+          </select>
+        </div>
+
+        <!-- Mode: Post-Match Analysis -->
+        <div id="bc-inputs-match-analysis" class="bc-input-group" style="display:none; display:none; grid-template-columns:1fr 1fr 1fr; gap:14px;">
+          <div>
+            <label class="bc-label">What worked well?</label>
+            <textarea id="bc-match-worked" rows="4" placeholder="e.g. My cross-court drops were accurate, won most net battles..."></textarea>
+          </div>
+          <div>
+            <label class="bc-label">What didn't work / where did you lose points?</label>
+            <textarea id="bc-match-didnt" rows="4" placeholder="e.g. Lost most points on high backhands, slow recovery to base..."></textarea>
+          </div>
+          <div>
+            <label class="bc-label">Opponent's style (optional)</label>
+            <textarea id="bc-match-opponent" rows="4" placeholder="e.g. Very aggressive smasher, attacked my backhand side..."></textarea>
+          </div>
+        </div>
+
+        <!-- Mode: Footwork Coach -->
+        <div id="bc-inputs-footwork-coach" class="bc-input-group" style="display:none; grid-template-columns:1fr 1fr; gap:14px;">
+          <div>
+            <label class="bc-label">Movement Pattern</label>
+            <select id="bc-fw-pattern">
+              <option>Split Step</option>
+              <option>Lunge to Corners</option>
+              <option>Crossover Step</option>
+              <option>Recovery to Base</option>
+              <option>Shadow Footwork</option>
+              <option>Rear Court Footwork</option>
+            </select>
+          </div>
+          <div>
+            <label class="bc-label">Skill Level</label>
+            <select id="bc-fw-level">
+              <option>Beginner</option>
+              <option selected>Intermediate</option>
+              <option>Advanced</option>
+              <option>Competitive</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Mode: Weekly Training Plan -->
+        <div id="bc-inputs-weekly-plan" class="bc-input-group" style="display:none; grid-template-columns:1fr 1fr 1fr; gap:14px;">
+          <div>
+            <label class="bc-label">Sessions per Week</label>
+            <select id="bc-plan-sessions">
+              <option value="3">3 sessions</option>
+              <option value="4">4 sessions</option>
+              <option value="5" selected>5 sessions</option>
+              <option value="6">6 sessions</option>
+              <option value="7">7 sessions (daily)</option>
+            </select>
+          </div>
+          <div>
+            <label class="bc-label">Primary Goal</label>
+            <select id="bc-plan-goal">
+              <option>Footwork &amp; Speed</option>
+              <option>Smash Power</option>
+              <option>Match Consistency</option>
+              <option>Match Fitness</option>
+              <option selected>All-round</option>
+            </select>
+          </div>
+          <div>
+            <label class="bc-label">Current Weaknesses</label>
+            <textarea id="bc-plan-weaknesses" rows="3" placeholder="e.g. Slow backhand clear, poor rear-court footwork..."></textarea>
+          </div>
+        </div>
+
+        <!-- Loading -->
+        <div id="bc-loading" style="display:none; margin-top:14px;">
+          <p class="loading">🏸 Coach is preparing your session...</p>
+        </div>
+
+        <!-- Result -->
+        <div id="bc-result" style="display:none; margin-top:16px; border-top:1px solid var(--border); padding-top:14px;">
+          <div id="bc-output"></div>
         </div>
       </div>
 
@@ -513,6 +667,88 @@
         document.getElementById("wr-send-status").textContent = "⚠️ Could not open Outlook.";
       } finally {
         btn.disabled = false; btn.textContent = "📧 Send Report";
+      }
+    }
+
+    // Auto-populate today's date in the Weekly Report date field
+    (function() {
+      const today = new Date();
+      const y = today.getFullYear();
+      const m = String(today.getMonth() + 1).padStart(2, '0');
+      const d = String(today.getDate()).padStart(2, '0');
+      document.getElementById("wr-date").value = `${y}-${m}-${d}`;
+    })();
+
+    // ── Feature 6: Badminton Coach ──
+    const BC_MODES = ["daily-drill","tip-of-day","match-analysis","footwork-coach","weekly-plan"];
+
+    function bcOnModeChange() {
+      const mode = document.getElementById("bc-mode").value;
+      BC_MODES.forEach(m => {
+        const el = document.getElementById("bc-inputs-" + m);
+        if (el) el.style.display = (m === mode) ? (m === "daily-drill" || m === "footwork-coach" || m === "match-analysis" || m === "weekly-plan" ? "grid" : "block") : "none";
+      });
+      document.getElementById("bc-result").style.display = "none";
+    }
+
+    function renderCoachOutput(text) {
+      return text.split('\n').map(line => {
+        const t = line.trim();
+        if (!t) return '<div class="coach-gap"></div>';
+        if (/^[A-Z][A-Z\s—&:()\d]+$/.test(t) && t.length > 3)
+          return `<div class="coach-header">${t}</div>`;
+        if (t.startsWith('•'))
+          return `<div class="coach-bullet">${t}</div>`;
+        if (/^(Step|Drill)\s\d/.test(t))
+          return `<div class="coach-drill">${t}</div>`;
+        return `<div class="coach-line">${t}</div>`;
+      }).join('');
+    }
+
+    async function badmintonCoach() {
+      const mode = document.getElementById("bc-mode").value;
+      let payload = { mode };
+
+      if (mode === "daily-drill") {
+        payload.focus   = document.getElementById("bc-drill-focus").value;
+        payload.level   = document.getElementById("bc-drill-level").value;
+        payload.minutes = document.getElementById("bc-drill-time").value;
+      } else if (mode === "tip-of-day") {
+        payload.focus = document.getElementById("bc-tip-focus").value;
+      } else if (mode === "match-analysis") {
+        payload.worked   = document.getElementById("bc-match-worked").value.trim();
+        payload.didnt    = document.getElementById("bc-match-didnt").value.trim();
+        payload.opponent = document.getElementById("bc-match-opponent").value.trim();
+        if (!payload.worked && !payload.didnt) { alert("Please describe what worked or what didn't in the match."); return; }
+      } else if (mode === "footwork-coach") {
+        payload.pattern = document.getElementById("bc-fw-pattern").value;
+        payload.level   = document.getElementById("bc-fw-level").value;
+      } else if (mode === "weekly-plan") {
+        payload.sessions   = document.getElementById("bc-plan-sessions").value;
+        payload.goal       = document.getElementById("bc-plan-goal").value;
+        payload.weaknesses = document.getElementById("bc-plan-weaknesses").value.trim();
+      }
+
+      const btn = document.getElementById("bc-generate-btn");
+      btn.disabled = true; btn.textContent = "Generating…";
+      document.getElementById("bc-loading").style.display = "block";
+      document.getElementById("bc-result").style.display = "none";
+
+      try {
+        const res = await fetch("/badminton-coach", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (data.error) { alert(data.error); return; }
+        document.getElementById("bc-output").innerHTML = renderCoachOutput(data.result);
+        document.getElementById("bc-result").style.display = "block";
+      } catch (err) {
+        alert("Error connecting to Badminton Coach.");
+      } finally {
+        document.getElementById("bc-loading").style.display = "none";
+        btn.disabled = false; btn.textContent = "🏸 Generate";
       }
     }
 

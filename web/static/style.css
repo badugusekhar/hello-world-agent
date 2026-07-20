@@ -262,6 +262,31 @@ button:hover {
   flex-shrink: 0;
 }
 
+/* ── Badminton Coach ── */
+.bc-label {
+  display: block;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+.bc-input-group select,
+.bc-input-group textarea { width: 100%; box-sizing: border-box; }
+
+.coach-header {
+  font-weight: 700;
+  color: var(--brand);
+  margin: 14px 0 4px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 3px;
+  font-size: 0.85rem;
+  letter-spacing: 0.05em;
+}
+.coach-bullet  { padding: 2px 0 2px 20px; color: var(--result-text); font-size: 0.9rem; }
+.coach-drill   { font-weight: 600; background: var(--result-bg); border-radius: 6px; padding: 4px 10px; margin: 6px 0 2px; font-size: 0.9rem; color: var(--result-text); }
+.coach-line    { padding: 2px 0; font-size: 0.9rem; color: var(--result-text); }
+.coach-gap     { height: 8px; }
+
 /* ── Footer ── */
 .footer {
   text-align: center;
