@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Claude Agents Playground</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+  <script>
+    (function() {
+      var saved = localStorage.getItem('theme');
+      var prefer = (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : saved;
+      if (prefer === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+    })();
+  </script>
+</head>
+<body>
+
+  <nav class="top-nav">
+    <span class="nav-brand">🤖 Claude Agents</span>
+    <div class="nav-links">
+      <a href="/" class="{{ 'nav-active' if active_page == 'home' else '' }}">Home</a>
+      <a href="/scrum" class="{{ 'nav-active' if active_page == 'scrum' else '' }}">🎙️ Scrum Voice</a>
+      <a href="/weekly" class="{{ 'nav-active' if active_page == 'weekly' else '' }}">📊 Weekly Report</a>
+    </div>
+    <button class="theme-toggle" onclick="toggleTheme()" id="theme-btn">🌙 Dark</button>
+  </nav>
+
+  <div class="container">
+
+    <div class="header">
+      {% block page_header %}
+      <h1>🤖 Claude Agents Playground</h1>
+      <p class="subtitle">Multi-agent demos powered by Claude Agent SDK</p>
+      {% endblock %}
+    </div>
+
+    <div class="cards-grid">
+      {% block content %}{% endblock %}
+    </div>
+
+  </div>
+
+  <div class="footer">
+    <p>Claude Agents Playground</p>
+  </div>
+
+  <script>
+    function toggleTheme() {
+      var html = document.documentElement;
+      var isDark = html.getAttribute('data-theme') === 'dark';
+      if (isDark) {
+        html.removeAttribute('data-theme');
+        localStorage.setItem('theme', 'light');
+        document.getElementById('theme-btn').textContent = '🌙 Dark';
+      } else {
+        html.setAttribute('data-theme', 'dark');
+        localStorage.setItem('theme', 'dark');
+        document.getElementById('theme-btn').textContent = '☀️ Light';
+      }
+    }
+
+    (function() {
+      if (document.documentElement.getAttribute('data-theme') === 'dark') {
+        document.getElementById('theme-btn').textContent = '☀️ Light';
+      }
+    })();
+
+    {% block scripts %}{% endblock %}
+  </script>
+
+</body>
+</html>

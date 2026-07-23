@@ -93,8 +93,17 @@ app = Flask(
 # ─────────────────────────────────────────────
 @app.route("/")
 def index():
-    """Serve the main browser UI."""
-    return render_template("index.html")
+    return render_template("index.html", active_page="home")
+
+
+@app.route("/scrum")
+def scrum_page():
+    return render_template("scrum.html", active_page="scrum")
+
+
+@app.route("/weekly")
+def weekly_page():
+    return render_template("weekly.html", active_page="weekly")
 
 
 # ─────────────────────────────────────────────

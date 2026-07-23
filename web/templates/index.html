@@ -1,33 +1,6 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Claude Agents Playground</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
-  <script>
-    (function() {
-      var saved = localStorage.getItem('theme');
-      var prefer = (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : saved;
-      if (prefer === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
-    })();
-  </script>
-</head>
-<body>
+{% extends "base.html" %}
 
-  <div class="container">
-
-    <!-- Header -->
-    <div class="header">
-      <h1>🤖 Claude Agents Playground</h1>
-      <p class="subtitle">Multi-agent demos powered by Claude Agent SDK</p>
-      <button class="theme-toggle" onclick="toggleTheme()" id="theme-btn">🌙 Dark</button>
-    </div>
-
-    <!-- ──────────────────────────────────── -->
-    <!-- CARDS GRID                          -->
-    <!-- ──────────────────────────────────── -->
-    <div class="cards-grid">
+{% block content %}
 
     <!-- ──────────────────────────────────── -->
     <!-- FEATURE 1: Hello World              -->
@@ -46,10 +19,7 @@
         <button onclick="sayHello()">Say Hello</button>
       </div>
 
-      <!-- Loading indicator -->
       <p id="hello-loading" class="loading" style="display:none;">⏳ Claude is thinking...</p>
-
-      <!-- Result box -->
       <div id="hello-result" class="result-box" style="display:none;"></div>
     </div>
 
@@ -70,10 +40,8 @@
         <button onclick="generatePrompt()">Generate Prompt</button>
       </div>
 
-      <!-- Loading indicator -->
       <p id="prompt-loading" class="loading" style="display:none;">⏳ Claude is thinking...</p>
 
-      <!-- Result: monospace block + copy button -->
       <div id="prompt-result" style="display:none;">
         <p id="prompt-filename" class="saved-label"></p>
         <pre id="prompt-output" class="code-block"></pre>
@@ -103,88 +71,7 @@
     </div>
 
       <!-- ──────────────────────────────────── -->
-      <!-- FEATURE 4: Scrum Status Voice      -->
-      <!-- ──────────────────────────────────── -->
-      <div class="card" style="grid-column: span 2;">
-        <h2>🎙️ Scrum Status Voice</h2>
-        <p class="description">Type your standup update — get a voice recording in your cloned voice.</p>
-
-        <!-- Voice selector + Generate button row -->
-        <div class="input-row" style="align-items:center; gap:12px; margin-bottom:12px;">
-          <label for="scrum-voice" style="font-weight:600; white-space:nowrap; color:var(--text);">Voice:</label>
-          <select id="scrum-voice" style="width:160px; flex:none;">
-            <option value="sekhar">Sekhar</option>
-            <option value="abhinav">Abhinav</option>
-            <option value="akshay">Akshay</option>
-          </select>
-          <button id="scrum-generate-btn" onclick="generateScrumVoice()" style="margin-left:auto;">Generate</button>
-        </div>
-
-        <!-- Three text areas side by side -->
-        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px;">
-          <div>
-            <label style="font-size:0.82rem; font-weight:600; color:var(--muted); display:block; margin-bottom:4px;">Today</label>
-            <textarea id="scrum-today" rows="5" placeholder="What did you complete today?" style="width:100%; box-sizing:border-box;"></textarea>
-          </div>
-          <div>
-            <label style="font-size:0.82rem; font-weight:600; color:var(--muted); display:block; margin-bottom:4px;">Tomorrow</label>
-            <textarea id="scrum-tomorrow" rows="5" placeholder="What will you work on tomorrow?" style="width:100%; box-sizing:border-box;"></textarea>
-          </div>
-          <div>
-            <label style="font-size:0.82rem; font-weight:600; color:var(--muted); display:block; margin-bottom:4px;">Blockers</label>
-            <textarea id="scrum-blockers" rows="5" placeholder="Any blockers? (leave blank for None)" style="width:100%; box-sizing:border-box;"></textarea>
-          </div>
-        </div>
-
-        <div id="scrum-loading" style="display:none; margin-top:12px;">
-          <p class="loading">⏳ Generating your voice update...</p>
-          <div style="margin-top:6px; font-size:0.85rem; color:var(--muted); display:flex; gap:16px;">
-            <span>⏱ Elapsed: <strong id="scrum-elapsed">0:00</strong></span>
-            <span>🕐 Remaining: <strong id="scrum-remaining">~4:00</strong></span>
-          </div>
-          <div style="margin-top:8px; background:var(--border,#e2e8f0); border-radius:4px; height:6px; overflow:hidden;">
-            <div id="scrum-progress-bar" style="height:100%; width:0%; background:var(--brand,#3182ce); border-radius:4px; transition:width 1s linear;"></div>
-          </div>
-        </div>
-        <div id="scrum-result" style="display:none;">
-          <audio id="scrum-audio" controls style="width:100%; margin-top:12px;"></audio>
-          <p id="scrum-script" style="font-size:0.82rem; color:var(--muted); margin-top:8px;"></p>
-        </div>
-      </div>
-
-      <!-- CARD: Weekly Status Report -->
-      <div class="card" style="grid-column: span 2;">
-        <h2>📊 Weekly Status Report</h2>
-        <p class="description">Enter your weekly update — download a ready-to-send T-Mobile status PPT.</p>
-        <div class="input-row">
-          <input id="wr-date" type="text" placeholder="Week ending date (e.g. 2026-07-24)" />
-        </div>
-        <div class="input-row">
-          <textarea id="wr-updates" rows="4" placeholder="Key Updates: What was completed this week?"></textarea>
-        </div>
-        <div class="input-row">
-          <textarea id="wr-next" rows="3" placeholder="Next Steps: What's planned for next week?"></textarea>
-        </div>
-        <div class="input-row">
-          <textarea id="wr-blockers" rows="2" placeholder="Blockers/Dependencies: Any? (leave blank for None)"></textarea>
-        </div>
-        <div class="input-row">
-          <button id="wr-generate-btn" onclick="generateWeeklyReport()">Generate PPT</button>
-        </div>
-        <div id="wr-loading" style="display:none; margin-top:10px;">
-          <p class="loading">⏳ Claude is building your status report...</p>
-        </div>
-        <div id="wr-result" style="display:none; margin-top:12px;">
-          <a id="wr-download" class="copy-btn" style="display:inline-block; text-decoration:none; cursor:pointer;">⬇ Download PPT</a>
-          <button id="wr-send-btn" class="copy-btn" onclick="sendWeeklyReport()"
-                  style="background:#e53e3e; margin-left:8px;">📧 Send Report</button>
-          <p id="wr-filename" style="font-size:0.82rem; color:var(--muted); margin-top:6px;"></p>
-          <p id="wr-send-status" style="font-size:0.82rem; margin-top:4px;"></p>
-        </div>
-      </div>
-
-      <!-- ──────────────────────────────────── -->
-      <!-- FEATURE 6: Badminton Coach         -->
+      <!-- FEATURE 4: Badminton Coach         -->
       <!-- ──────────────────────────────────── -->
       <div class="card" style="grid-column: span 2;">
         <h2>🏸 Badminton Coach</h2>
@@ -249,7 +136,7 @@
         </div>
 
         <!-- Mode: Post-Match Analysis -->
-        <div id="bc-inputs-match-analysis" class="bc-input-group" style="display:none; display:none; grid-template-columns:1fr 1fr 1fr; gap:14px;">
+        <div id="bc-inputs-match-analysis" class="bc-input-group" style="display:none; grid-template-columns:1fr 1fr 1fr; gap:14px;">
           <div>
             <label class="bc-label">What worked well?</label>
             <textarea id="bc-match-worked" rows="4" placeholder="e.g. My cross-court drops were accurate, won most net battles..."></textarea>
@@ -327,94 +214,27 @@
         </div>
       </div>
 
-    </div><!-- /cards-grid -->
+{% endblock %}
 
-    <!-- ──────────────────────────────────── -->
-    <!-- ADD FUTURE FEATURES BELOW AS CARDS  -->
-    <!-- ──────────────────────────────────── -->
-
-    <!-- Example: Calculator card (commented out for now)
-    <div class="card">
-      <h2>🔢 Calculator</h2>
-      <p class="description">Enter two numbers and an operation.</p>
-      <div class="input-row">
-        <input id="num1" type="number" placeholder="First number" />
-        <select id="op">
-          <option value="plus">+</option>
-          <option value="minus">-</option>
-          <option value="times">×</option>
-          <option value="divided by">÷</option>
-        </select>
-        <input id="num2" type="number" placeholder="Second number" />
-        <button onclick="calculate()">Calculate</button>
-      </div>
-      <div id="calc-result" class="result-box" style="display:none;"></div>
-    </div>
-    -->
-
-    <!-- Footer -->
-    <div class="footer">
-      <p>Claude Agents Playground</p>
-    </div>
-
-  </div>
-
-  <!-- ──────────────────────────────────── -->
-  <!-- JavaScript — one function per feature -->
-  <!-- ──────────────────────────────────── -->
-  <script>
-
-    // ── Dark mode toggle ──
-    function toggleTheme() {
-      var html = document.documentElement;
-      var isDark = html.getAttribute('data-theme') === 'dark';
-      if (isDark) {
-        html.removeAttribute('data-theme');
-        localStorage.setItem('theme', 'light');
-        document.getElementById('theme-btn').textContent = '🌙 Dark';
-      } else {
-        html.setAttribute('data-theme', 'dark');
-        localStorage.setItem('theme', 'dark');
-        document.getElementById('theme-btn').textContent = '☀️ Light';
-      }
-    }
-
-    // Set initial button label on page load
-    (function() {
-      if (document.documentElement.getAttribute('data-theme') === 'dark') {
-        document.getElementById('theme-btn').textContent = '☀️ Light';
-      }
-    })();
-
+{% block scripts %}
     // ── Feature 1: Hello World ──
     async function sayHello() {
       const name = document.getElementById("name-input").value.trim();
-      if (!name) {
-        alert("Please enter your name first!");
-        return;
-      }
-
-      // Show loading, hide old result
+      if (!name) { alert("Please enter your name first!"); return; }
       document.getElementById("hello-loading").style.display = "block";
       document.getElementById("hello-result").style.display = "none";
-
       try {
         const res = await fetch("/hello", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ name: name })
         });
-
         const data = await res.json();
-
-        // Show the result
         const resultBox = document.getElementById("hello-result");
         resultBox.textContent = data.message;
         resultBox.style.display = "block";
-
       } catch (error) {
-        document.getElementById("hello-result").textContent =
-          "⚠️ Error: Could not reach the agent. Is the server running?";
+        document.getElementById("hello-result").textContent = "⚠️ Error: Could not reach the agent. Is the server running?";
         document.getElementById("hello-result").style.display = "block";
       } finally {
         document.getElementById("hello-loading").style.display = "none";
@@ -424,14 +244,9 @@
     // ── Feature 2: Generate Prompt ──
     async function generatePrompt() {
       const task = document.getElementById("task-input").value.trim();
-      if (!task) {
-        alert("Please describe a task first!");
-        return;
-      }
-
+      if (!task) { alert("Please describe a task first!"); return; }
       document.getElementById("prompt-loading").style.display = "block";
       document.getElementById("prompt-result").style.display = "none";
-
       try {
         const res = await fetch("/generate-prompt", {
           method: "POST",
@@ -440,13 +255,10 @@
         });
         const data = await res.json();
         document.getElementById("prompt-output").textContent = data.prompt || data.error;
-        document.getElementById("prompt-filename").textContent = data.filename
-          ? "💾 Saved as: " + data.filename
-          : "";
+        document.getElementById("prompt-filename").textContent = data.filename ? "💾 Saved as: " + data.filename : "";
         document.getElementById("prompt-result").style.display = "block";
       } catch (error) {
-        document.getElementById("prompt-output").textContent =
-          "⚠️ Error: Could not reach the agent. Is the server running?";
+        document.getElementById("prompt-output").textContent = "⚠️ Error: Could not reach the agent. Is the server running?";
         document.getElementById("prompt-result").style.display = "block";
       } finally {
         document.getElementById("prompt-loading").style.display = "none";
@@ -543,143 +355,7 @@
       container.style.display = "block";
     }
 
-    // ── Feature 4: Scrum Status Voice ──
-    var _scrumTimer = null;
-    const SCRUM_ESTIMATE_SECS = 240; // ~4 min average on CPU
-
-    function _fmtTime(secs) {
-      const m = Math.floor(secs / 60), s = Math.floor(secs % 60);
-      return m + ":" + String(s).padStart(2, "0");
-    }
-
-    function _startScrumTimer() {
-      const start = Date.now();
-      _scrumTimer = setInterval(function() {
-        const elapsed = (Date.now() - start) / 1000;
-        const remaining = Math.max(0, SCRUM_ESTIMATE_SECS - elapsed);
-        const pct = Math.min(100, (elapsed / SCRUM_ESTIMATE_SECS) * 100);
-        document.getElementById("scrum-elapsed").textContent = _fmtTime(elapsed);
-        document.getElementById("scrum-remaining").textContent = remaining > 0 ? "~" + _fmtTime(remaining) : "almost done…";
-        document.getElementById("scrum-progress-bar").style.width = pct + "%";
-      }, 1000);
-    }
-
-    function _stopScrumTimer() {
-      if (_scrumTimer) { clearInterval(_scrumTimer); _scrumTimer = null; }
-      document.getElementById("scrum-progress-bar").style.width = "100%";
-    }
-
-    async function generateScrumVoice() {
-      const today    = document.getElementById("scrum-today").value.trim();
-      const tomorrow = document.getElementById("scrum-tomorrow").value.trim();
-      const blockers = document.getElementById("scrum-blockers").value.trim();
-      const voice    = document.getElementById("scrum-voice").value;
-      if (!today && !tomorrow) { alert("Please enter at least Today or Tomorrow."); return; }
-
-      const genBtn = document.getElementById("scrum-generate-btn");
-      genBtn.disabled = true;
-      genBtn.textContent = "Generating…";
-      document.getElementById("scrum-loading").style.display = "block";
-      document.getElementById("scrum-result").style.display = "none";
-      document.getElementById("scrum-elapsed").textContent = "0:00";
-      document.getElementById("scrum-remaining").textContent = "~4:00";
-      document.getElementById("scrum-progress-bar").style.width = "0%";
-      _startScrumTimer();
-
-      try {
-        const res = await fetch("/scrum-voice", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ today, tomorrow, blockers, voice })
-        });
-        const data = await res.json();
-        if (data.error) { alert(data.error); return; }
-        const audio = document.getElementById("scrum-audio");
-        audio.src = data.audio;
-        document.getElementById("scrum-script").textContent = data.script;
-        document.getElementById("scrum-result").style.display = "block";
-        audio.play();
-      } catch (err) {
-        alert("Error generating voice update.");
-      } finally {
-        _stopScrumTimer();
-        document.getElementById("scrum-loading").style.display = "none";
-        genBtn.disabled = false;
-        genBtn.textContent = "Generate";
-      }
-    }
-
-    // ── Feature 5: Weekly Status Report ──
-    async function generateWeeklyReport() {
-      const date     = document.getElementById("wr-date").value.trim();
-      const updates  = document.getElementById("wr-updates").value.trim();
-      const next     = document.getElementById("wr-next").value.trim();
-      const blockers = document.getElementById("wr-blockers").value.trim();
-      if (!date || !updates) { alert("Date and Key Updates are required."); return; }
-
-      const btn = document.getElementById("wr-generate-btn");
-      btn.disabled = true; btn.textContent = "Generating…";
-      document.getElementById("wr-loading").style.display = "block";
-      document.getElementById("wr-result").style.display = "none";
-
-      try {
-        const res = await fetch("/weekly-report", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ date, key_updates: updates, next_steps: next, blockers })
-        });
-        const data = await res.json();
-        if (data.error) { alert(data.error); return; }
-        const link = document.getElementById("wr-download");
-        link.href = data.file;
-        link.download = data.filename;
-        document.getElementById("wr-filename").textContent = data.filename;
-        document.getElementById("wr-result").style.display = "block";
-        document.getElementById("wr-send-status").textContent = "";
-        window._wrData = { date, key_updates: updates, next_steps: next, blockers, pptx_b64: data.file, filename: data.filename };
-        link.click();
-      } catch (err) {
-        alert("Error generating report.");
-      } finally {
-        document.getElementById("wr-loading").style.display = "none";
-        btn.disabled = false; btn.textContent = "Generate PPT";
-      }
-    }
-
-    async function sendWeeklyReport() {
-      if (!window._wrData) { alert("Generate the report first."); return; }
-      const btn = document.getElementById("wr-send-btn");
-      btn.disabled = true; btn.textContent = "Opening Outlook…";
-      document.getElementById("wr-send-status").textContent = "";
-      try {
-        const res = await fetch("/send-email", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(window._wrData)
-        });
-        const data = await res.json();
-        if (data.error) {
-          document.getElementById("wr-send-status").textContent = "⚠️ " + data.error;
-        } else {
-          document.getElementById("wr-send-status").textContent = "✅ Outlook draft opened — review and click Send.";
-        }
-      } catch (err) {
-        document.getElementById("wr-send-status").textContent = "⚠️ Could not open Outlook.";
-      } finally {
-        btn.disabled = false; btn.textContent = "📧 Send Report";
-      }
-    }
-
-    // Auto-populate today's date in the Weekly Report date field
-    (function() {
-      const today = new Date();
-      const y = today.getFullYear();
-      const m = String(today.getMonth() + 1).padStart(2, '0');
-      const d = String(today.getDate()).padStart(2, '0');
-      document.getElementById("wr-date").value = `${y}-${m}-${d}`;
-    })();
-
-    // ── Feature 6: Badminton Coach ──
+    // ── Feature 4: Badminton Coach ──
     const BC_MODES = ["daily-drill","tip-of-day","match-analysis","footwork-coach","weekly-plan"];
 
     function bcOnModeChange() {
@@ -751,24 +427,4 @@
         btn.disabled = false; btn.textContent = "🏸 Generate";
       }
     }
-
-    // ── Future Feature: Calculator (add when ready) ──
-    // async function calculate() {
-    //   const num1 = document.getElementById("num1").value;
-    //   const num2 = document.getElementById("num2").value;
-    //   const operation = document.getElementById("op").value;
-    //   const res = await fetch("/calculate", {
-    //     method: "POST",
-    //     headers: { "Content-Type": "application/json" },
-    //     body: JSON.stringify({ num1, num2, operation })
-    //   });
-    //   const data = await res.json();
-    //   const resultBox = document.getElementById("calc-result");
-    //   resultBox.textContent = "Result: " + data.result;
-    //   resultBox.style.display = "block";
-    // }
-
-  </script>
-
-</body>
-</html>
+{% endblock %}
